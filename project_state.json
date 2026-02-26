@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "HR & Company dashboard for a multi-experience entertainment venue. Built in Black, Red & White. Features: role-based authentication (Team Member, Supervisor, Management, Admin) with initial admin account, staff profiles with training logs and manager-only internal notes, Thu–Wed 7-day rota/scheduling with fully editable shifts, paid/unpaid time off and sickness management, employee availability settings, appraisals linked to profiles with auto next-due dates, payroll CSV export (current week/2-week/custom), stock request system with 23-option dropdown and Requested/Ordered/Delivered pipeline, inventory management for Bar/FEC Cafe/Battle Masters with central totals and expiry dates, and Employee of the Month submissions visible only to Admin.",
+  "architectural_notes": [
+    "Black, Red & White company colour scheme throughout",
+    "Stock request dropdown includes 23 experience/building options (Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St Georges General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room)",
+    "Rota week runs Thursday to Wednesday",
+    "Holiday bookable in half days (4 hours) or full days (8 hours)"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-apply-a-black-red-white-company-colour-scheme-consistently-across-the-entire-application-backgrounds-navigation-buttons-badges-and-typography-replacing-any-existing-colour-tokens-with-this-palette",
+      "title": "Apply a Black, Red & White company colour scheme consistently across the entire application — backgrounds, navigation, buttons, badges, and typography — replacing any existing colour tokens with this palette.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-sidebar-so-it-does-not-overlap-or-cover-the-main-content-area-the-sidebar-must-either-sit-beside-the-content-correctly-or-include-a-collapse-minimise-toggle-so-users-can-hide-it",
+      "title": "Fix the sidebar so it does not overlap or cover the main content area. The sidebar must either sit beside the content correctly or include a collapse/minimise toggle so users can hide it.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-simple-username-password-login-system-seed-a-single-initial-admin-account-with-username-admin-and-password-magnumsal123-all-other-users-register-via-internet-identity-and-must-be-approved-by-admin-before-accessing-the-dashboard",
+      "title": "Implement a simple username/password login system. Seed a single initial Admin account with username 'Admin' and password 'MagnumSal123'. All other users register via Internet Identity and must be approved by Admin before accessing the dashboard.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-four-account-privilege-levels-team-member-supervisor-management-and-admin-admin-can-assign-or-change-any-user-s-privilege-level-supervisors-and-management-can-create-edit-shifts-and-approve-holiday-time-off-requests-team-members-can-only-view-their-own-data",
+      "title": "Implement four account privilege levels: Team Member, Supervisor, Management, and Admin. Admin can assign or change any user's privilege level. Supervisors and Management can create/edit shifts and approve holiday/time-off requests. Team Members can only view their own data.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-staff-dashboard-listing-all-employees-visible-to-admin-management-supervisors-each-employee-profile-must-store-full-name-email-job-role-wage-phone-number-address-training-log-and-a-manager-only-internal-notes-section-that-is-hidden-from-the-employee",
+      "title": "Build a Staff Dashboard listing all employees (visible to Admin, Management, Supervisors). Each employee profile must store: full name, email, job role, wage, phone number, address, training log, and a manager-only internal notes section that is hidden from the employee.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-rota-scheduling-section-with-a-7-day-calendar-view-running-thursday-to-wednesday-shifts-must-be-fully-editable-start-end-times-date-location-and-notes-support-scheduling-paid-time-off-unpaid-time-off-and-sickness-on-the-calendar-show-a-day-view-and-a-week-view",
+      "title": "Build a Rota & Scheduling section with a 7-day calendar view running Thursday to Wednesday. Shifts must be fully editable: start/end times, date, location, and notes. Support scheduling paid time off, unpaid time off, and sickness on the calendar. Show a day view and a week view.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-allow-employees-to-submit-requests-for-paid-or-unpaid-time-off-from-their-portal-requests-must-be-visible-in-a-queue-where-only-supervisors-or-management-and-admin-can-approve-or-reject-them-include-holiday-and-sickness-statistics-visible-to-supervisors-and-management",
+      "title": "Allow employees to submit requests for paid or unpaid time off from their portal. Requests must be visible in a queue where only Supervisors or Management (and Admin) can approve or reject them. Include holiday and sickness statistics visible to Supervisors and Management.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-allow-employees-to-set-their-availability-preferred-working-days-days-unavailable-preferred-hours-per-week-or-open-availability-this-availability-is-visible-to-supervisors-and-management-when-scheduling",
+      "title": "Allow employees to set their availability: preferred working days, days unavailable, preferred hours per week, or open availability. This availability is visible to Supervisors and Management when scheduling.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-employees-can-only-view-their-own-assigned-shifts-in-the-employee-portal-they-cannot-see-other-employees-shift-data-names-or-schedules",
+      "title": "Employees can only view their own assigned shifts in the Employee Portal. They cannot see other employees' shift data, names, or schedules.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-a-payroll-csv-export-feature-export-options-must-include-current-week-thu-wed-2-week-period-thu-wed-and-custom-date-range-the-export-must-differentiate-worked-hours-paid-time-off-unpaid-time-off-sickness-and-holiday",
+      "title": "Provide a Payroll CSV export feature. Export options must include: current week (Thu–Wed), 2-week period (Thu–Wed), and custom date range. The export must differentiate worked hours, paid time off, unpaid time off, sickness, and holiday.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-allow-assignment-of-training-or-knowledge-records-to-staff-members-so-it-is-easy-to-see-which-employees-can-run-which-experience-training-records-should-be-visible-on-each-employee-profile",
+      "title": "Allow assignment of training or knowledge records to staff members so it is easy to see which employees can run which experience. Training records should be visible on each employee profile.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-appraisals-section-linked-to-employee-profiles-each-appraisal-record-must-store-the-date-completed-and-notes-the-next-appraisal-due-date-defaults-to-3-months-after-the-most-recent-completed-appraisal-admin-and-management-can-add-and-edit-appraisal-records",
+      "title": "Build an Appraisals section linked to employee profiles. Each appraisal record must store the date completed and notes. The next appraisal due date defaults to 3 months after the most recent completed appraisal. Admin and Management can add and edit appraisal records.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-stock-request-system-the-request-form-must-include-fields-item-name-experience-or-building-dropdown-with-the-23-specified-options-quantity-and-a-free-text-comment-submitted-requests-appear-on-a-dashboard-with-three-sections-requested-ordered-and-delivered-users-can-drag-items-between-sections-or-change-status-via-a-dropdown-button",
+      "title": "Build a Stock Request system. The request form must include fields: Item name, Experience or Building (dropdown with the 23 specified options), Quantity, and a free-text Comment. Submitted requests appear on a dashboard with three sections: Requested, Ordered, and Delivered. Users can drag items between sections or change status via a dropdown/button.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-inventory-management-section-for-food-drink-stock-maintain-a-central-master-stock-list-and-individual-stock-levels-for-three-locations-bar-fec-cafe-and-battle-masters-when-stock-at-an-individual-location-is-updated-the-central-total-updates-automatically-each-location-s-stock-entry-must-support-an-expiry-date-field",
+      "title": "Build an Inventory Management section for food & drink stock. Maintain a central master stock list and individual stock levels for three locations: Bar, FEC Cafe, and Battle Masters. When stock at an individual location is updated, the central total updates automatically. Each location's stock entry must support an expiry date field.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-employee-of-the-month-section-any-employee-can-submit-a-recommendation-nominee-name-and-reason-submissions-are-visible-only-to-admin-admin-can-declare-a-winner-and-mark-that-the-50-bonus-has-been-noted-awarded",
+      "title": "Build an Employee of the Month section. Any employee can submit a recommendation (nominee name and reason). Submissions are visible only to Admin. Admin can declare a winner and mark that the £50 bonus has been noted/awarded.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-navigation-item-for-stock-control-containing-stock-requests-and-inventory-management-sub-sections-in-the-sidebar-visible-to-all-logged-in-approved-users-ensure-the-sidebar-navigation-is-complete-correctly-structured-and-does-not-overlap-page-content",
+      "title": "Add a navigation item for Stock Control (containing Stock Requests and Inventory Management sub-sections) in the sidebar, visible to all logged-in approved users. Ensure the sidebar navigation is complete, correctly structured, and does not overlap page content.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Staff dashboard with full profiles (name, email, job role, wage, phone, address, training log, internal manager-only notes)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Role-based access control: Team Member, Supervisor, Management, Admin. Initial admin account (Login: Admin / Password: MagnumSal123). New accounts require Admin approval.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Thu–Wed 7-day rota/scheduling calendar with fully editable shifts (times, notes, locations), paid/unpaid time off, sickness logging, employee availability settings, holiday/sickness stats for Supervisors+",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Employees can only see their own shifts; Supervisors/Management can create and approve shifts and holiday requests",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Payroll CSV export with options: current week (Thu–Wed), 2-week period (Thu–Wed), or custom date range. Differentiates worked hours, paid/unpaid leave, sickness, and holiday.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Appraisals linked to employee profiles with dates of completion and auto-calculated next due date (3 months after most recent)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Stock request system with fields: item, experience/building (23-option dropdown), quantity, comment. Dashboard with Requested/Ordered/Delivered sections; drag or status update to move items.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Inventory management for Bar, FEC Cafe, and Battle Masters with central stock totals, individual location stock levels, and expiry dates per location",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Employee of the Month: staff submit recommendations, submissions visible to Admin only, winner noted with £50 bonus",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Magnum HR Dashboard",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

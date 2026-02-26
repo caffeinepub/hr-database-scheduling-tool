@@ -1,0 +1,340 @@
+{
+  "kind": "build_request",
+  "title": "Full HR & Company Dashboard — Complete Build",
+  "projectName": "Magnum HR Dashboard",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Apply a Black, Red & White company colour scheme consistently across the entire application — backgrounds, navigation, buttons, badges, and typography — replacing any existing colour tokens with this palette.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Do this in company colours which are Black, Red and White"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Primary background is black or near-black",
+        "Accent/action colour is red",
+        "Text and contrast elements use white",
+        "No blue, purple, or other off-brand colours appear in the UI"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Fix the sidebar so it does not overlap or cover the main content area. The sidebar must either sit beside the content correctly or include a collapse/minimise toggle so users can hide it.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "The sidebar seems to incorrectly cover the rest of the page. Needs to be formatted correctly or be able to minimised."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Main content is never obscured by the sidebar",
+        "Sidebar and content area share the available width correctly",
+        "A collapse/minimise toggle is available",
+        "Layout is responsive and stable on standard desktop widths"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement a simple username/password login system. Seed a single initial Admin account with username 'Admin' and password 'MagnumSal123'. All other users register via Internet Identity and must be approved by Admin before accessing the dashboard.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Single Initial admin account",
+          "Login - Admin",
+          "Password - MagnumSal123",
+          "New accounts require Admin approval"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can log in with username 'Admin' and password 'MagnumSal123'",
+        "New employee accounts appear in a pending approval queue visible to Admin",
+        "Unapproved accounts see a holding page after login",
+        "Admin can approve or reject pending accounts"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement four account privilege levels: Team Member, Supervisor, Management, and Admin. Admin can assign or change any user's privilege level. Supervisors and Management can create/edit shifts and approve holiday/time-off requests. Team Members can only view their own data.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Admin to be able to assign different priviledge levels to different staff - Team Member, Supervisor and Management"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Four distinct roles exist: Team Member, Supervisor, Management, Admin",
+        "Admin can change any user's role from the employee profile",
+        "Supervisors and Management can create, edit, and delete shifts for all employees",
+        "Supervisors and Management can approve or reject holiday/time-off requests",
+        "Team Members cannot see other employees' shift data"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Build a Staff Dashboard listing all employees (visible to Admin, Management, Supervisors). Each employee profile must store: full name, email, job role, wage, phone number, address, training log, and a manager-only internal notes section that is hidden from the employee.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Staff Dashboard including staff details (name, email, job role, wage, phone number and training log and address)",
+          "Management and Admin to be able to leave internal notes on employee profiles which employee can't see."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Employee profile displays name, email, job role, wage, phone, address",
+        "Training log is accessible from the profile",
+        "Manager notes section is visible only to Supervisor, Management, and Admin",
+        "Employees viewing their own profile do not see the manager notes section"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Build a Rota & Scheduling section with a 7-day calendar view running Thursday to Wednesday. Shifts must be fully editable: start/end times, date, location, and notes. Support scheduling paid time off, unpaid time off, and sickness on the calendar. Show a day view and a week view.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Rota and scheduling including 7 day calendar that runs Thursday to Wednesday",
+          "Shifts able to have notes or locations added to them as well as times or dates changed so they are fully editable.",
+          "Able to schedule paid or unpaid time off, as well as sickness."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Calendar always starts on Thursday and ends on Wednesday",
+        "Week view and day view are both available",
+        "Each shift can have notes and a location set",
+        "Shift start time, end time, and date are all editable",
+        "Paid time off, unpaid time off, and sickness can be added to the calendar",
+        "Supervisors and Management can create and edit shifts"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Allow employees to submit requests for paid or unpaid time off from their portal. Requests must be visible in a queue where only Supervisors or Management (and Admin) can approve or reject them. Include holiday and sickness statistics visible to Supervisors and Management.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Staff able to manually request paid or unpaid time off which then only Supervisor or Manager account level can approve",
+          "Also include sickness and holiday management and statistics which only Supervisor or Manager account level can approve"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Employees can submit paid or unpaid time-off requests from the Employee Portal",
+        "Pending requests appear in an approval queue for Supervisors/Management/Admin",
+        "Supervisors and Management can approve or reject requests",
+        "Holiday and sickness statistics (totals, trends) are visible to Supervisors and Management"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Allow employees to set their availability: preferred working days, days unavailable, preferred hours per week, or open availability. This availability is visible to Supervisors and Management when scheduling.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Employees are able to make accounts and set their availability for when they can work. Including days off and preferred hours or open availability."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Employees can set availability (days available, days off, preferred hours or open availability) from their portal",
+        "Availability data is visible to Supervisors and Management in the scheduling view"
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Employees can only view their own assigned shifts in the Employee Portal. They cannot see other employees' shift data, names, or schedules.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Employees can't see other employees shift data, only their own shifts that are assigned to them."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Employee Portal shift view only returns shifts assigned to the logged-in employee",
+        "No UI element exposes other employees' shift details to a Team Member account"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Provide a Payroll CSV export feature. Export options must include: current week (Thu–Wed), 2-week period (Thu–Wed), and custom date range. The export must differentiate worked hours, paid time off, unpaid time off, sickness, and holiday.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "Payroll export in CSV, it should be able to export custom period, current week or 2 week period Thursday to Wed"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Export button is accessible to Admin and Management",
+        "User can select: current week, 2-week period (Thu–Wed), or custom date range",
+        "Downloaded CSV includes columns differentiating worked hours, paid leave, unpaid leave, sickness, and holiday",
+        "Each row corresponds to one employee"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Allow assignment of training or knowledge records to staff members so it is easy to see which employees can run which experience. Training records should be visible on each employee profile.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Ability to assign knowledge or training to staff members, to be able to easily see who can run which experience."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Training/knowledge records can be added to an employee profile",
+        "Each record can specify the experience or skill covered",
+        "A summary view shows which staff can run each experience",
+        "Training log is visible on the employee profile page"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Build an Appraisals section linked to employee profiles. Each appraisal record must store the date completed and notes. The next appraisal due date defaults to 3 months after the most recent completed appraisal. Admin and Management can add and edit appraisal records.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Also create HR tools, to have list of appraisals that link to employee profiles, to mark dates that appraisals have been done and when the next one is due (by default 3 months after most recent appraisal)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Appraisal records appear on the employee profile under an Appraisals tab",
+        "Each record stores date completed and notes",
+        "Next due date is automatically calculated as 3 months after the most recent appraisal",
+        "Overdue or upcoming appraisals are visually highlighted"
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Build a Stock Request system. The request form must include fields: Item name, Experience or Building (dropdown with the 23 specified options), Quantity, and a free-text Comment. Submitted requests appear on a dashboard with three sections: Requested, Ordered, and Delivered. Users can drag items between sections or change status via a dropdown/button.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8",
+          "msg-10"
+        ],
+        "quotes": [
+          "Stock request system where they can submit a request",
+          "request to include name of item, experience or building it's for, quantity and leave a comment",
+          "This gets added to a dashboard with 3 sections, requested, ordered and delivered. Ability to mark or drag item into different category."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Stock request form has fields: Item, Experience/Building dropdown, Quantity, Comment",
+        "Experience/Building dropdown contains all 23 options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St Georges General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room",
+        "Dashboard shows three columns: Requested, Ordered, Delivered",
+        "Items can be moved between columns by drag-and-drop or a status change control"
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Build an Inventory Management section for food & drink stock. Maintain a central master stock list and individual stock levels for three locations: Bar, FEC Cafe, and Battle Masters. When stock at an individual location is updated, the central total updates automatically. Each location's stock entry must support an expiry date field.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Stock management for food & drink - Central list of all stock of food & drink we offer, as well as individual stock levels for each of the 3 locations - Bar, FEC Cafe and Battle Masters. When changes made to individual locations, this adjusts the main stock level too. On stock lists for locations include ability to write expiry dates"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Central stock list shows aggregated totals across all three locations",
+        "Individual stock views exist for Bar, FEC Cafe, and Battle Masters",
+        "Editing a location's stock quantity updates the central total immediately",
+        "Each location stock entry has an expiry date field",
+        "Items and locations are clearly labelled"
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Build an Employee of the Month section. Any employee can submit a recommendation (nominee name and reason). Submissions are visible only to Admin. Admin can declare a winner and mark that the £50 bonus has been noted/awarded.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Employee Of The Month - Staff are able to submit a employee of the month recommendation, submissions only visible to Admin. Winner of employee of the month gets £50 bonus."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All employees can submit a recommendation with nominee name and reason",
+        "Submissions list is visible only to Admin",
+        "Admin can select a winner from the submissions",
+        "Admin can mark the £50 bonus as noted/awarded on the winner record"
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "text": "Add a navigation item for Stock Control (containing Stock Requests and Inventory Management sub-sections) in the sidebar, visible to all logged-in approved users. Ensure the sidebar navigation is complete, correctly structured, and does not overlap page content.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "Stock request system",
+          "Stock management for food & drink"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Sidebar includes a Stock Control section with links to Stock Requests and Inventory",
+        "All major sections are reachable from the sidebar: Staff, Scheduling, Stock Control, Employee of the Month, Employee Portal",
+        "Sidebar does not overlay the main content at any point",
+        "Sidebar collapse/expand toggle works correctly"
+      ]
+    }
+  ],
+  "constraints": [
+    "All Motoko logic must remain in a single backend actor (backend/main.mo)",
+    "Do not modify files listed in frontend.immutablePaths",
+    "Authentication must use Internet Identity as the underlying auth mechanism; username/password for Admin is a layer on top stored in backend state",
+    "Colour scheme must be strictly Black, Red, and White — no other brand colours"
+  ],
+  "nonGoals": [
+    "External database integrations",
+    "Email or SMS notification services",
+    "Real-time WebSocket features",
+    "Mobile app or React Native builds",
+    "Integration with third-party payroll software APIs"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

@@ -1,0 +1,374 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-apply-a-black-red-white-company-colour-scheme-consistently-across-the-entire-application-backgrounds-navigation-buttons-badges-and-typography-replacing-any-existing-colour-tokens-with-this-palette",
+      "featureTitle": "Apply a Black, Red & White company colour scheme consistently across the entire application — backgrounds, navigation, buttons, badges, and typography — replacing any existing colour tokens with this palette.",
+      "files": [
+        "frontend/src/components/layout/Header.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/tailwind.config.js"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-the-sidebar-so-it-does-not-overlap-or-cover-the-main-content-area-the-sidebar-must-either-sit-beside-the-content-correctly-or-include-a-collapse-minimise-toggle-so-users-can-hide-it",
+      "featureTitle": "Fix the sidebar so it does not overlap or cover the main content area. The sidebar must either sit beside the content correctly or include a collapse/minimise toggle so users can hide it.",
+      "files": [
+        "frontend/src/components/layout/Layout.tsx",
+        "frontend/src/components/layout/MainLayout.tsx",
+        "frontend/src/components/layout/Sidebar.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-simple-username-password-login-system-seed-a-single-initial-admin-account-with-username-admin-and-password-magnumsal123-all-other-users-register-via-internet-identity-and-must-be-approved-by-admin-before-accessing-the-dashboard",
+      "featureTitle": "Implement a simple username/password login system. Seed a single initial Admin account with username 'Admin' and password 'MagnumSal123'. All other users register via Internet Identity and must be approved by Admin before accessing the dashboard.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Layout.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/AdminApprovalQueuePage.tsx",
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/src/pages/PendingApprovalPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-four-account-privilege-levels-team-member-supervisor-management-and-admin-admin-can-assign-or-change-any-user-s-privilege-level-supervisors-and-management-can-create-edit-shifts-and-approve-holiday-time-off-requests-team-members-can-only-view-their-own-data",
+      "featureTitle": "Implement four account privilege levels: Team Member, Supervisor, Management, and Admin. Admin can assign or change any user's privilege level. Supervisors and Management can create/edit shifts and approve holiday/time-off requests. Team Members can only view their own data.",
+      "files": [
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/EmployeePortalPage.tsx",
+        "frontend/src/pages/EmployeeProfilePage.tsx",
+        "frontend/src/pages/SchedulingPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-a-staff-dashboard-listing-all-employees-visible-to-admin-management-supervisors-each-employee-profile-must-store-full-name-email-job-role-wage-phone-number-address-training-log-and-a-manager-only-internal-notes-section-that-is-hidden-from-the-employee",
+      "featureTitle": "Build a Staff Dashboard listing all employees (visible to Admin, Management, Supervisors). Each employee profile must store: full name, email, job role, wage, phone number, address, training log, and a manager-only internal notes section that is hidden from the employee.",
+      "files": [
+        "frontend/src/pages/EmployeeProfilePage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-a-rota-scheduling-section-with-a-7-day-calendar-view-running-thursday-to-wednesday-shifts-must-be-fully-editable-start-end-times-date-location-and-notes-support-scheduling-paid-time-off-unpaid-time-off-and-sickness-on-the-calendar-show-a-day-view-and-a-week-view",
+      "featureTitle": "Build a Rota & Scheduling section with a 7-day calendar view running Thursday to Wednesday. Shifts must be fully editable: start/end times, date, location, and notes. Support scheduling paid time off, unpaid time off, and sickness on the calendar. Show a day view and a week view.",
+      "files": [
+        "frontend/src/pages/SchedulingPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-allow-employees-to-submit-requests-for-paid-or-unpaid-time-off-from-their-portal-requests-must-be-visible-in-a-queue-where-only-supervisors-or-management-and-admin-can-approve-or-reject-them-include-holiday-and-sickness-statistics-visible-to-supervisors-and-management",
+      "featureTitle": "Allow employees to submit requests for paid or unpaid time off from their portal. Requests must be visible in a queue where only Supervisors or Management (and Admin) can approve or reject them. Include holiday and sickness statistics visible to Supervisors and Management.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/pages/EmployeePortalPage.tsx",
+        "frontend/src/pages/HolidayStatisticsPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-allow-employees-to-set-their-availability-preferred-working-days-days-unavailable-preferred-hours-per-week-or-open-availability-this-availability-is-visible-to-supervisors-and-management-when-scheduling",
+      "featureTitle": "Allow employees to set their availability: preferred working days, days unavailable, preferred hours per week, or open availability. This availability is visible to Supervisors and Management when scheduling.",
+      "files": [
+        "frontend/src/pages/EmployeePortalPage.tsx",
+        "frontend/src/pages/SchedulingPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-employees-can-only-view-their-own-assigned-shifts-in-the-employee-portal-they-cannot-see-other-employees-shift-data-names-or-schedules",
+      "featureTitle": "Employees can only view their own assigned shifts in the Employee Portal. They cannot see other employees' shift data, names, or schedules.",
+      "files": [
+        "frontend/src/pages/EmployeePortalPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-provide-a-payroll-csv-export-feature-export-options-must-include-current-week-thu-wed-2-week-period-thu-wed-and-custom-date-range-the-export-must-differentiate-worked-hours-paid-time-off-unpaid-time-off-sickness-and-holiday",
+      "featureTitle": "Provide a Payroll CSV export feature. Export options must include: current week (Thu–Wed), 2-week period (Thu–Wed), and custom date range. The export must differentiate worked hours, paid time off, unpaid time off, sickness, and holiday.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/pages/PayrollExportPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-allow-assignment-of-training-or-knowledge-records-to-staff-members-so-it-is-easy-to-see-which-employees-can-run-which-experience-training-records-should-be-visible-on-each-employee-profile",
+      "featureTitle": "Allow assignment of training or knowledge records to staff members so it is easy to see which employees can run which experience. Training records should be visible on each employee profile.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/components/profile/TrainingTab.tsx",
+        "frontend/src/pages/TrainingSummaryPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-an-appraisals-section-linked-to-employee-profiles-each-appraisal-record-must-store-the-date-completed-and-notes-the-next-appraisal-due-date-defaults-to-3-months-after-the-most-recent-completed-appraisal-admin-and-management-can-add-and-edit-appraisal-records",
+      "featureTitle": "Build an Appraisals section linked to employee profiles. Each appraisal record must store the date completed and notes. The next appraisal due date defaults to 3 months after the most recent completed appraisal. Admin and Management can add and edit appraisal records.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/pages/AppraisalsDashboardPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-a-stock-request-system-the-request-form-must-include-fields-item-name-experience-or-building-dropdown-with-the-23-specified-options-quantity-and-a-free-text-comment-submitted-requests-appear-on-a-dashboard-with-three-sections-requested-ordered-and-delivered-users-can-drag-items-between-sections-or-change-status-via-a-dropdown-button",
+      "featureTitle": "Build a Stock Request system. The request form must include fields: Item name, Experience or Building (dropdown with the 23 specified options), Quantity, and a free-text Comment. Submitted requests appear on a dashboard with three sections: Requested, Ordered, and Delivered. Users can drag items between sections or change status via a dropdown/button.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/StockRequestsPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-an-inventory-management-section-for-food-drink-stock-maintain-a-central-master-stock-list-and-individual-stock-levels-for-three-locations-bar-fec-cafe-and-battle-masters-when-stock-at-an-individual-location-is-updated-the-central-total-updates-automatically-each-location-s-stock-entry-must-support-an-expiry-date-field",
+      "featureTitle": "Build an Inventory Management section for food & drink stock. Maintain a central master stock list and individual stock levels for three locations: Bar, FEC Cafe, and Battle Masters. When stock at an individual location is updated, the central total updates automatically. Each location's stock entry must support an expiry date field.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/InventoryManagementPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-14"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-an-employee-of-the-month-section-any-employee-can-submit-a-recommendation-nominee-name-and-reason-submissions-are-visible-only-to-admin-admin-can-declare-a-winner-and-mark-that-the-50-bonus-has-been-noted-awarded",
+      "featureTitle": "Build an Employee of the Month section. Any employee can submit a recommendation (nominee name and reason). Submissions are visible only to Admin. Admin can declare a winner and mark that the £50 bonus has been noted/awarded.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-15"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-navigation-item-for-stock-control-containing-stock-requests-and-inventory-management-sub-sections-in-the-sidebar-visible-to-all-logged-in-approved-users-ensure-the-sidebar-navigation-is-complete-correctly-structured-and-does-not-overlap-page-content",
+      "featureTitle": "Add a navigation item for Stock Control (containing Stock Requests and Inventory Management sub-sections) in the sidebar, visible to all logged-in approved users. Ensure the sidebar navigation is complete, correctly structured, and does not overlap page content.",
+      "files": [
+        "frontend/src/components/layout/Sidebar.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-16"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
