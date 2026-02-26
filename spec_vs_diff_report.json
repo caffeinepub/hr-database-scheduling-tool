@@ -1,54 +1,20 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T18:54:25.212Z",
-  "summary": "The diff implements most of the required features: red/white/black theme (REQ-1), dropdown fix (REQ-2), backend badge system (REQ-3), seeded badges (REQ-4), Badges tab on EmployeeProfilePage (REQ-5), and React Query hooks (REQ-6). A few specific acceptance criteria details warrant scrutiny but most requirements are well-covered.",
-  "missing_requirements": [
-    {
-      "id": "REQ-3",
-      "requirement": "Store badges in a stable HashMap<Text, Badge> and staff badge assignments in a stable HashMap<Text, StaffBadge>; persistence across upgrades via stable variables.",
-      "reason": "The migration module creates the maps, but the diff of backend/main.mo is truncated and does not clearly show that the badge/staffBadge maps are declared as stable variables in the actor. Stable persistence in the actor body cannot be confirmed from the truncated diff.",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Badge cards show the assigning manager's name looked up from employeeId.",
-      "reason": "BadgesTab.tsx defines a getEmployeeName helper and receives an employees prop, but the card rendering section is truncated in the diff and it cannot be confirmed the manager name is actually rendered in each badge card.",
-      "evidence": [
-        "frontend/src/components/profile/BadgesTab.tsx"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "A separate backend/migration.mo module was created to hold Badge and StaffBadge types and seed logic.",
-      "reason": "The build constraint explicitly states all Motoko logic must remain in the single main actor (backend/main.mo). Splitting types and seeding into a separate migration.mo module violates this constraint, even if it is imported by main.mo.",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
-      ]
-    }
-  ],
-  "confidence": 0.72,
+  "generatedAt": "2026-02-26T19:48:36.379Z",
+  "summary": "The diff implements all six requirements of the stock request system. REQ-1 (StockRequestsPage with form and 23 locations), REQ-2 (backend Motoko data structures and methods), REQ-3 (React Query hooks), REQ-4 (kanban dashboard with drag-and-drop and manual status change), REQ-5 (archive page with table and back-link), and REQ-6 (routing and sidebar) all appear implemented. The StockRequest type uses 'notes' instead of 'comment' as the field name, but this is a minor naming variation. No significant hallucinations or missing requirements detected.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.87,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
     "frontend/src/App.tsx",
-    "frontend/src/components/auth/ProfileSetupModal.tsx",
-    "frontend/src/components/layout/Header.tsx",
-    "frontend/src/components/layout/MainLayout.tsx",
     "frontend/src/components/layout/Sidebar.tsx",
-    "frontend/src/components/profile/AssignBadgeModal.tsx",
-    "frontend/src/components/profile/BadgesTab.tsx",
     "frontend/src/components/profile/ManagerNotesTab.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/index.css",
-    "frontend/src/pages/EmployeeProfilePage.tsx",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/StockRequestArchivePage.tsx",
+    "frontend/src/pages/StockRequestsPage.tsx",
     "project_state.json"
   ]
 }

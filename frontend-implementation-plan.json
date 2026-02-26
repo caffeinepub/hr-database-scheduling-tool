@@ -1,228 +1,98 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "UI colour overhaul (red/white/black theme + dropdown fix) & staff gamification badges",
+  "title": "Stock Request System with Kanban Dashboard and Auto-Archive",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Restyle the entire application with a bold red, white, and black colour scheme that fits an Escape Room brand",
+      "summary": "Create Stock Requests submission form page with experience/building dropdown",
       "acceptanceCriteria": [
-        "Red is used as the primary accent across buttons, active nav items, badges, and key UI highlights",
-        "The sidebar and header use a dark black or near-black background with white/red text and icons",
-        "Content areas (cards, tables, modals) use white or off-white backgrounds with dark text for readability",
-        "All pages are visually consistent — no page retains the old plain white/black-only look",
-        "Text contrast meets readability standards on all coloured backgrounds"
+        "Form contains fields: item name, experience/building dropdown, quantity, comment",
+        "Dropdown lists all 23 specified locations exactly as written",
+        "Submitting the form creates a new stock request in the 'Requested' column",
+        "Form resets after successful submission"
       ],
       "file_operations": [
         {
-          "path": "frontend/tailwind.config.js",
+          "path": "frontend/src/pages/StockRequestsPage.tsx",
           "operation": "modify",
-          "description": "Update the color palette in the Tailwind configuration to define red, white, and black as the primary theme colors. Replace existing CSS variable references with oklch values for vivid red (primary accent), pure white (content surfaces), and near-black (backgrounds/sidebars). Ensure all color tokens (background, foreground, primary, secondary, accent, muted, destructive, border, input, ring, card, popover) are redefined to use the red/white/black scheme."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Update CSS custom properties in :root to implement the red/white/black color scheme using oklch values. Define --background as near-black, --foreground as white, --primary as vivid red, --card as white, --sidebar-background as black, --header-background as near-black. Ensure all custom properties support the Escape Room brand aesthetic with high contrast and readability."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Apply the new red/white/black theme to the sidebar component. Update background colors to use black/near-black, text colors to white, and active navigation items to show red accents. Ensure icon colors match the theme and hover states use red highlights. Update className props to reference the new Tailwind color tokens."
-        },
-        {
-          "path": "frontend/src/components/layout/Header.tsx",
-          "operation": "modify",
-          "description": "Apply the red/white/black theme to the header component. Use near-black background, white text for app title and user name, and red accents for interactive elements. Update the logout button to use red as the primary action color. Ensure all text is legible against the dark background."
-        },
-        {
-          "path": "frontend/src/pages/DashboardPage.tsx",
-          "operation": "modify",
-          "description": "Update the dashboard page to use the new color scheme. Apply white backgrounds to stat cards with red accent borders or highlights for key metrics. Use black text on white cards for readability. Update button styles to use red as the primary action color. Ensure the page feels energetic and on-brand."
-        },
-        {
-          "path": "frontend/src/pages/EmployeesPage.tsx",
-          "operation": "modify",
-          "description": "Apply the red/white/black theme to the employees page. Update table backgrounds to white, headers to near-black with white text, and action buttons to red. Ensure role badges use the theme colors and search/filter controls have consistent styling."
-        },
-        {
-          "path": "frontend/src/pages/EmployeeProfilePage.tsx",
-          "operation": "modify",
-          "description": "Update the employee profile page with the new theme. Apply white card backgrounds, red tab highlights for active tabs, and ensure all buttons use red as the primary color. Update the profile header section to use theme-consistent colors."
-        },
-        {
-          "path": "frontend/src/pages/SchedulingPage.tsx",
-          "operation": "modify",
-          "description": "Apply the red/white/black theme to the scheduling page. Update the weekly calendar grid with white backgrounds for shift cards, red accents for today's date, and black borders. Ensure all shift detail modals use the new color scheme."
-        },
-        {
-          "path": "frontend/src/pages/CompanyDocumentsPage.tsx",
-          "operation": "modify",
-          "description": "Update the documents page to use the new color scheme. Apply white card backgrounds for document listings, red accents for action buttons, and black text for readability. Ensure category badges use theme-appropriate colors."
-        },
-        {
-          "path": "frontend/src/pages/EmployeePortalPage.tsx",
-          "operation": "modify",
-          "description": "Apply the red/white/black theme to the employee portal. Update shift cards, holiday request forms, and status badges to use the new palette. Ensure white backgrounds for content areas and red highlights for interactive elements."
-        },
-        {
-          "path": "frontend/src/components/employees/EmployeeTable.tsx",
-          "operation": "modify",
-          "description": "Update the employee table component to use white backgrounds with black text, red action buttons, and theme-consistent status badges. Ensure table headers use near-black backgrounds with white text."
-        },
-        {
-          "path": "frontend/src/components/scheduling/ShiftCard.tsx",
-          "operation": "modify",
-          "description": "Apply the red/white/black theme to shift cards. Use white card backgrounds with red accent borders or department color highlights that complement the main theme. Ensure text remains legible and action buttons use red."
+          "description": "Add a submission form section above the kanban board with fields for item name (text input), experience/building (dropdown with exact 23 options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room), quantity (number input), and comment (textarea). Wire the form submission to call the useCreateStockRequest mutation with the current user's name from their profile, then reset the form on success."
         }
       ]
     },
     {
-      "id": "REQ-2",
-      "summary": "Fix all dropdown and select menus so their background is a solid colour rather than transparent",
+      "id": "REQ-3",
+      "summary": "Add React Query hooks for stock request operations",
       "acceptanceCriteria": [
-        "Every select/dropdown in the app shows a fully opaque, solid-colour background when opened",
-        "No dropdown appears transparent or see-through over page content",
-        "Dropdown option text is legible against the solid background",
-        "Fix applies to all pages including forms, filters, modals, and table controls"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add global CSS rules for all select elements and dropdown components to enforce solid, opaque backgrounds. Target select elements, popover menus, and dropdown content with explicit background-color declarations using the theme's white or near-black values. Add rules like 'select { background-color: white; }' and '.popover-content { background-color: white; }' to ensure no transparency."
-        },
-        {
-          "path": "frontend/src/components/employees/AddEmployeeModal.tsx",
-          "operation": "modify",
-          "description": "Ensure all Select components in the add employee modal have solid white backgrounds. Add explicit className or style props to enforce opaque backgrounds on the role select dropdown and any other select controls."
-        },
-        {
-          "path": "frontend/src/components/employees/EditEmployeeModal.tsx",
-          "operation": "modify",
-          "description": "Ensure all Select components in the edit employee modal have solid white backgrounds. Apply the same fix as AddEmployeeModal to role and status selects."
-        },
-        {
-          "path": "frontend/src/components/profile/AddTrainingModal.tsx",
-          "operation": "modify",
-          "description": "Fix the training status select dropdown to have a solid white background. Ensure the dropdown is fully opaque when opened and options are readable."
-        },
-        {
-          "path": "frontend/src/components/profile/EditTrainingModal.tsx",
-          "operation": "modify",
-          "description": "Fix the training status select dropdown to have a solid white background, matching the AddTrainingModal fix."
-        },
-        {
-          "path": "frontend/src/components/profile/AddAppraisalModal.tsx",
-          "operation": "modify",
-          "description": "Ensure the appraisal type select dropdown has a solid white background and is fully opaque."
-        },
-        {
-          "path": "frontend/src/components/profile/AddManagerNoteModal.tsx",
-          "operation": "modify",
-          "description": "Fix the note type select dropdown to have a solid white background."
-        },
-        {
-          "path": "frontend/src/components/profile/EditManagerNoteModal.tsx",
-          "operation": "modify",
-          "description": "Fix the note type select dropdown to have a solid white background."
-        },
-        {
-          "path": "frontend/src/components/profile/ManagerNotesTab.tsx",
-          "operation": "modify",
-          "description": "Fix the note type filter select dropdown to have a solid white background."
-        },
-        {
-          "path": "frontend/src/components/documents/AddDocumentModal.tsx",
-          "operation": "modify",
-          "description": "Ensure the document category select dropdown has a solid white background."
-        },
-        {
-          "path": "frontend/src/components/documents/EditDocumentModal.tsx",
-          "operation": "modify",
-          "description": "Ensure the document category select dropdown has a solid white background."
-        },
-        {
-          "path": "frontend/src/components/resources/AddResourceModal.tsx",
-          "operation": "modify",
-          "description": "Fix the resource category select dropdown to have a solid white background."
-        },
-        {
-          "path": "frontend/src/components/resources/EditResourceModal.tsx",
-          "operation": "modify",
-          "description": "Fix the resource category select dropdown to have a solid white background."
-        },
-        {
-          "path": "frontend/src/components/scheduling/AddShiftModal.tsx",
-          "operation": "modify",
-          "description": "Ensure all select dropdowns (shift type, employee assignment) in the add shift modal have solid white backgrounds."
-        },
-        {
-          "path": "frontend/src/components/scheduling/EditShiftModal.tsx",
-          "operation": "modify",
-          "description": "Ensure all select dropdowns in the edit shift modal have solid white backgrounds."
-        },
-        {
-          "path": "frontend/src/pages/EmployeeOfMonthPage.tsx",
-          "operation": "modify",
-          "description": "Fix the month select dropdown to have a solid white background."
-        },
-        {
-          "path": "frontend/src/pages/HolidayStatisticsPage.tsx",
-          "operation": "modify",
-          "description": "Fix any status filter dropdowns to have solid white backgrounds."
-        },
-        {
-          "path": "frontend/src/pages/PayrollExportPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the date range select dropdown has a solid white background."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Add a 'Badges' tab to the Employee Profile page displaying all assigned badges with manager/admin assignment and removal capabilities",
-      "acceptanceCriteria": [
-        "A 'Badges' tab appears on the Employee Profile page alongside existing tabs",
-        "Assigned badges render as styled cards with emoji, name, description, category, assigned date, assigning manager, and note",
-        "Managers and admins see an 'Assign Badge' button; regular employees do not",
-        "The assign badge modal shows all available badges grouped by category with a search or scroll",
-        "Assigning a badge updates the display immediately via React Query cache invalidation",
-        "Managers/admins can remove an assigned badge; removal is reflected immediately",
-        "Badge cards are styled consistently with the red/white/black colour theme"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/profile/BadgesTab.tsx",
-          "operation": "create",
-          "description": "Create a new BadgesTab component that displays all badges assigned to the employee. Fetch staff badges using the useGetStaffBadges hook and render each as a styled card showing the badge emoji (iconKey), name, description, category chip with color coding, assigned date (formatted), assigning manager's name (resolved from employee list), and optional note. Use the useIsCallerAdmin hook or role check to conditionally show an 'Assign Badge' button for managers/admins. Each badge card should include a remove button (visible only to managers/admins) that calls the useRemoveBadgeFromStaff mutation. Style cards with white backgrounds, red accent borders, and black text consistent with the theme. Display a loading skeleton while fetching and an empty state message if no badges are assigned."
-        },
-        {
-          "path": "frontend/src/components/profile/AssignBadgeModal.tsx",
-          "operation": "create",
-          "description": "Create an AssignBadgeModal component that allows managers/admins to assign a badge to an employee. Fetch all available badges using the useGetBadges hook and display them grouped by category (Attendance, Performance, Experience, Team, Milestones). Each badge should show its emoji, name, and description. Include a search/filter input to narrow the badge list. Provide an optional note textarea for the manager to add context. On submit, call the useAssignBadgeToStaff mutation with a new StaffBadge object containing id (generated), employeeId (from props), badgeId (selected badge), assignedBy (current user's employeeId from profile), assignedAt (current timestamp), and note (optional). Invalidate the staff badges query on success and close the modal. Style consistently with the red/white/black theme using Dialog, ScrollArea, and Input components from shadcn/ui."
-        },
-        {
-          "path": "frontend/src/pages/EmployeeProfilePage.tsx",
-          "operation": "modify",
-          "description": "Add a 'Badges' tab to the existing tabs array in the EmployeeProfilePage component. Import and render the BadgesTab component when the badges tab is active. Ensure the tab label uses the same styling as existing tabs (Training, Sickness, Appraisals, Manager Notes) with red accent for the active state. Pass the employeeId prop to BadgesTab so it can fetch the correct staff badges."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Add React Query hooks for the new badge endpoints",
-      "acceptanceCriteria": [
-        "useGetBadges hook fetches all available badges from the backend",
-        "useGetStaffBadges(employeeId) fetches assignments for the specified employee",
-        "useAssignBadgeToStaff mutation calls the assignBadgeToStaff backend method",
-        "useRemoveBadgeFromStaff mutation calls the removeBadgeFromStaff backend method",
-        "Successful assign/remove mutations invalidate the staff badges query for the affected employee"
+        "All five hooks are defined and exported from useQueries.ts",
+        "Mutation hooks invalidate relevant stock request queries on success"
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add four new React Query hooks to useQueries.ts: 1) useGetBadges() - a useQuery hook that calls actor.getBadges() with queryKey ['badges'], returning an array of Badge objects. 2) useGetStaffBadges(employeeId: string) - a useQuery hook that calls actor.getStaffBadges(employeeId) with queryKey ['staffBadges', employeeId], returning an array of StaffBadge objects, enabled only when employeeId is provided. 3) useAssignBadgeToStaff() - a useMutation hook that calls actor.assignBadgeToStaff(assignment) and invalidates queries ['staffBadges', assignment.employeeId] and ['badges'] on success, showing a success toast. 4) useRemoveBadgeFromStaff() - a useMutation hook that accepts { assignmentId: string, employeeId: string }, calls actor.removeBadgeFromStaff(assignmentId), and invalidates ['staffBadges', employeeId] on success with a toast notification. Follow the existing pattern in the file for error handling and query client usage."
+          "description": "Add five new hooks: useGetStockRequestsByStatus (query hook accepting StockRequestStatus enum param, calls actor.getStockRequestsByStatus), useCreateStockRequest (mutation hook calling actor.createStockRequest with itemName, experience, quantity, notes, submitterName params, invalidates stock request queries on success), useUpdateStockRequestStatus (mutation hook calling actor.updateStockRequestStatus with id and newStatus params, invalidates stock request queries on success), useArchiveDeliveredRequests (mutation hook calling actor.archiveOldDeliveredRequests, invalidates stock request queries on success), and useGetArchivedStockRequests (query hook calling actor.getStockRequestsByStatus with StockRequestStatus.archived)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement three-column kanban dashboard with drag-and-drop and auto-archive trigger",
+      "acceptanceCriteria": [
+        "Three visible columns: Requested, Ordered, Delivered",
+        "Cards can be dragged between columns",
+        "Cards have a button/menu to change status without dragging",
+        "Moving a card persists the status change to the backend",
+        "On page load, archiveDeliveredRequests is called to sweep old delivered items"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/StockRequestsPage.tsx",
+          "operation": "modify",
+          "description": "Implement a three-column kanban board layout below the submission form. Each column displays stock requests fetched via useGetStockRequestsByStatus for statuses 'requested', 'ordered', and 'delivered'. Render each stock request as a card showing item name, experience/building, quantity, and comment. Implement drag-and-drop functionality (consider react-beautiful-dnd or similar library) to move cards between columns, calling useUpdateStockRequestStatus mutation on drop. Add a status-change dropdown or button menu on each card as an alternative to dragging. In a useEffect hook that runs on component mount, call the archiveDeliveredRequests mutation to automatically move delivered items older than 7 days to archived status."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Create Stock Request Archive page displaying archived requests",
+      "acceptanceCriteria": [
+        "Archive page lists all requests with status #archived",
+        "Each entry shows item name, experience/building, quantity, comment, submitted date, delivered date",
+        "A link from the Stock Requests page navigates to the archive page",
+        "Archive page is accessible via the sidebar or as a sub-link"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/StockRequestArchivePage.tsx",
+          "operation": "create",
+          "description": "Create a new page component that fetches all archived stock requests using the useGetArchivedStockRequests hook. Display them in a table or card list layout showing: item name, experience/building, quantity, comment, date submitted (formatted from createdTimestamp), and date delivered (formatted from deliveredTimestamp). Use the formatDate utility from lib/utils.ts for timestamp formatting. Include a back button or breadcrumb navigation to return to the Stock Requests page."
+        },
+        {
+          "path": "frontend/src/pages/StockRequestsPage.tsx",
+          "operation": "modify",
+          "description": "Add a prominent 'View Archive' button or link above or below the kanban board that navigates to the Stock Request Archive page using React Router's useNavigate hook."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Wire Stock Requests and Archive routes into app navigation",
+      "acceptanceCriteria": [
+        "Navigating to the stock requests route renders StockRequestsPage",
+        "Navigating to the archive route renders StockRequestArchivePage",
+        "Stock Requests appears in the sidebar and is clickable"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Import StockRequestsPage and StockRequestArchivePage components. Add two new Route entries in the router configuration: one for '/stock-requests' rendering StockRequestsPage, and one for '/stock-requests/archive' rendering StockRequestArchivePage. Ensure both routes are wrapped in the MainLayout with appropriate page titles."
+        },
+        {
+          "path": "frontend/src/components/layout/Sidebar.tsx",
+          "operation": "modify",
+          "description": "Add a new navigation item for 'Stock Requests' in the Finance or Admin navigation group (whichever is more appropriate based on existing structure). The item should link to '/stock-requests' and use an appropriate icon from lucide-react (e.g., Package or Warehouse icon). Ensure the item is visible to all authenticated users, not just admins."
         }
       ]
     }

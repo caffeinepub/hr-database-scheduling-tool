@@ -2,14 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-restyle-the-entire-application-with-a-bold-red-white-and-black-colour-scheme-that-fits-an-escape-room-brand-replace-the-current-plain-monochrome-palette-with-a-rich-theme-use-deep-vivid-reds-as-primary-accent-colours-clean-white-for-content-surfaces-and-black-near-black-for-backgrounds-and-sidebars-apply-this-consistently-across-the-header-sidebar-navigation-items-buttons-badges-stat-cards-page-backgrounds-tables-and-form-controls-typography-and-iconography-should-also-reflect-this-palette-the-result-should-feel-immersive-and-on-brand-energetic-but-readable",
-      "featureTitle": "Restyle the entire application with a bold red, white, and black colour scheme that fits an Escape Room brand. Replace the current plain monochrome palette with a rich theme: use deep/vivid reds as primary accent colours, clean white for content surfaces, and black/near-black for backgrounds and sidebars. Apply this consistently across the header, sidebar, navigation items, buttons, badges, stat cards, page backgrounds, tables, and form controls. Typography and iconography should also reflect this palette. The result should feel immersive and on-brand — energetic but readable.",
+      "featureId": "feature-create-a-stock-requests-page-frontend-src-pages-stockrequestspage-tsx-with-a-submission-form-that-collects-item-name-text-input-experience-or-building-dropdown-selector-quantity-number-input-and-a-comment-textarea-the-dropdown-must-include-exactly-these-options-milton-general-the-happy-institute-the-dollhouse-wizard-of-oz-st-george-s-general-break-the-bank-marvellous-magic-school-riddled-hell-house-the-don-s-revenge-whodunit-battle-masters-fec-general-time-raiders-laser-quest-retro-arcade-7-sins-csi-disco-csi-mafia-karaoke-lounge-karaoke-disco-like-tv-game-show-splatter-room",
+      "featureTitle": "Create a Stock Requests page (frontend/src/pages/StockRequestsPage.tsx) with a submission form that collects: item name (text input), experience or building (dropdown selector), quantity (number input), and a comment (textarea). The dropdown must include exactly these options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
       "files": [
-        "frontend/src/components/layout/Header.tsx",
-        "frontend/src/components/layout/Sidebar.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/EmployeeProfilePage.tsx",
-        "frontend/tailwind.config.js"
+        "frontend/src/pages/StockRequestsPage.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -27,11 +23,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-all-dropdown-and-select-menus-so-their-background-is-a-solid-colour-rather-than-transparent-dropdowns-e-g-role-selects-category-filters-date-pickers-status-selects-in-forms-and-tables-must-display-an-opaque-background-that-matches-the-updated-theme-either-white-off-white-for-light-surfaces-or-the-dark-background-for-dark-surfaces-the-dropdown-must-be-fully-readable-regardless-of-what-is-rendered-behind-it",
-      "featureTitle": "Fix all dropdown and select menus so their background is a solid colour rather than transparent. Dropdowns (e.g. role selects, category filters, date pickers, status selects in forms and tables) must display an opaque background that matches the updated theme — either white/off-white for light surfaces or the dark background for dark surfaces. The dropdown must be fully readable regardless of what is rendered behind it.",
+      "featureId": "feature-add-react-query-hooks-in-frontend-src-hooks-usequeries-ts-for-stock-requests-usegetstockrequestsbystatus-usecreatestockrequest-useupdatestockrequeststatus-usearchivedeliveredrequests-and-usegetarchivedstockrequests",
+      "featureTitle": "Add React Query hooks in frontend/src/hooks/useQueries.ts for stock requests: useGetStockRequestsByStatus, useCreateStockRequest, useUpdateStockRequestStatus, useArchiveDeliveredRequests, and useGetArchivedStockRequests.",
       "files": [
-        "frontend/src/components/profile/ManagerNotesTab.tsx",
-        "frontend/src/index.css"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -44,17 +39,37 @@
         "user-approval@3.0.0"
       ],
       "testIds": [
-        "REQ-2"
+        "REQ-3"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-badges-tab-to-the-employee-profile-page-employeeprofilepage-tsx-this-tab-should-display-all-badges-currently-assigned-to-the-employee-as-visual-badge-cards-each-showing-the-badge-emoji-name-description-category-colour-chip-date-assigned-assigning-manager-s-name-and-optional-note-when-the-viewer-is-a-manager-or-admin-show-an-assign-badge-button-that-opens-a-modal-assignbadgemodal-allowing-them-to-select-a-badge-from-the-full-badge-list-grouped-by-category-optionally-add-a-note-and-confirm-the-assignment-managers-admins-should-also-be-able-to-remove-an-assigned-badge-via-a-remove-button-on-each-badge-card-use-the-new-react-query-hooks-for-getstaffbadges-and-assignbadgetostaff-and-removebadgefromstaff-style-badge-cards-using-the-red-white-black-theme-with-category-coloured-accents",
-      "featureTitle": "Add a 'Badges' tab to the Employee Profile page (`EmployeeProfilePage.tsx`). This tab should display all badges currently assigned to the employee as visual badge cards — each showing the badge emoji, name, description, category colour chip, date assigned, assigning manager's name, and optional note. When the viewer is a manager or admin, show an 'Assign Badge' button that opens a modal (`AssignBadgeModal`) allowing them to select a badge from the full badge list (grouped by category), optionally add a note, and confirm the assignment. Managers/admins should also be able to remove an assigned badge via a remove button on each badge card. Use the new React Query hooks for `getStaffBadges` and `assignBadgeToStaff` and `removeBadgeFromStaff`. Style badge cards using the red/white/black theme with category-coloured accents.",
+      "featureId": "feature-implement-the-kanban-dashboard-on-the-stock-requests-page-with-three-columns-requested-ordered-and-delivered-each-stock-request-card-must-display-the-item-name-experience-building-quantity-and-comment-cards-must-support-both-drag-and-drop-and-a-manual-status-change-button-menu-to-move-them-between-columns-on-page-load-trigger-the-archivedeliveredrequests-backend-function-to-automatically-move-any-delivered-items-older-than-7-days-to-the-archive",
+      "featureTitle": "Implement the kanban dashboard on the Stock Requests page with three columns: Requested, Ordered, and Delivered. Each stock request card must display the item name, experience/building, quantity, and comment. Cards must support both drag-and-drop and a manual status-change button/menu to move them between columns. On page load, trigger the archiveDeliveredRequests backend function to automatically move any delivered items older than 7 days to the archive.",
       "files": [
-        "frontend/src/components/profile/AssignBadgeModal.tsx",
-        "frontend/src/components/profile/BadgesTab.tsx",
-        "frontend/src/pages/EmployeeProfilePage.tsx"
+        "frontend/src/pages/StockRequestsPage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-stock-request-archive-page-frontend-src-pages-stockrequestarchivepage-tsx-that-displays-all-archived-stock-requests-in-a-table-or-card-list-showing-item-name-experience-building-quantity-comment-date-submitted-and-date-delivered-add-a-clearly-visible-link-from-the-stock-requests-page-to-this-archive-page",
+      "featureTitle": "Create a Stock Request Archive page (frontend/src/pages/StockRequestArchivePage.tsx) that displays all archived stock requests in a table or card list, showing item name, experience/building, quantity, comment, date submitted, and date delivered. Add a clearly visible link from the Stock Requests page to this archive page.",
+      "files": [
+        "frontend/src/pages/StockRequestArchivePage.tsx",
+        "frontend/src/pages/StockRequestsPage.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -72,10 +87,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-react-query-hooks-for-the-new-badge-endpoints-in-usequeries-ts-usegetbadges-fetches-all-badge-definitions-usegetstaffbadges-employeeid-fetches-badge-assignments-for-a-specific-employee-useassignbadgetostaff-mutation-and-useremovebadgefromstaff-mutation-invalidate-the-staff-badges-query-on-successful-assign-or-remove",
-      "featureTitle": "Add React Query hooks for the new badge endpoints in `useQueries.ts`: `useGetBadges()` (fetches all badge definitions), `useGetStaffBadges(employeeId)` (fetches badge assignments for a specific employee), `useAssignBadgeToStaff()` (mutation), and `useRemoveBadgeFromStaff()` (mutation). Invalidate the staff badges query on successful assign or remove.",
+      "featureId": "feature-add-stock-requests-and-stock-request-archive-as-navigable-routes-in-the-app-router-frontend-src-app-tsx-and-include-a-stock-requests-entry-in-the-sidebar-navigation-frontend-src-components-layout-sidebar-tsx-under-an-appropriate-group",
+      "featureTitle": "Add Stock Requests and Stock Request Archive as navigable routes in the app router (frontend/src/App.tsx) and include a Stock Requests entry in the sidebar navigation (frontend/src/components/layout/Sidebar.tsx) under an appropriate group.",
       "files": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/Sidebar.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",

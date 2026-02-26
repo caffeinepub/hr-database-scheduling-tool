@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Users, Calendar, FileText, Shield, Trophy, BarChart3,
-  Package, Home, BookOpen, DollarSign, ChevronRight, Lock
+  Package, Home, BookOpen, DollarSign, ChevronRight, Lock, CheckSquare, ShoppingCart
 } from 'lucide-react';
 
 interface NavItem {
@@ -28,6 +28,7 @@ const navGroups: NavGroup[] = [
     label: 'Overview',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} /> },
+      { id: 'todos', label: 'To Do', icon: <CheckSquare size={18} /> },
     ],
   },
   {
@@ -35,39 +36,48 @@ const navGroups: NavGroup[] = [
     items: [
       { id: 'employees', label: 'Staff', icon: <Users size={18} />, adminOnly: true },
       { id: 'scheduling', label: 'Scheduling', icon: <Calendar size={18} />, adminOnly: true },
-      { id: 'holiday-statistics', label: 'Holiday Stats', icon: <BarChart3 size={18} />, adminOnly: true },
-      { id: 'employee-portal', label: 'My Portal', icon: <Home size={18} /> },
+      { id: 'holiday-stats', label: 'Holiday Stats', icon: <BarChart3 size={18} />, adminOnly: true },
+      { id: 'portal', label: 'My Portal', icon: <Home size={18} /> },
     ],
   },
   {
     label: 'Recognition',
     items: [
-      { id: 'employee-of-month', label: 'Employee of Month', icon: <Trophy size={18} /> },
+      { id: 'eom', label: 'Employee of Month', icon: <Trophy size={18} /> },
     ],
   },
   {
     label: 'Resources',
     items: [
       { id: 'documents', label: 'Documents', icon: <FileText size={18} /> },
-      { id: 'secure-resources', label: 'Secure Resources', icon: <Lock size={18} /> },
+      { id: 'resources', label: 'Secure Resources', icon: <Lock size={18} /> },
       { id: 'inventory', label: 'Inventory', icon: <Package size={18} /> },
+    ],
+  },
+  {
+    label: 'Operations',
+    items: [
+      { id: 'stock-requests', label: 'Stock Requests', icon: <ShoppingCart size={18} /> },
     ],
   },
   {
     label: 'Finance',
     items: [
-      { id: 'payroll', label: 'Payroll Export', icon: <DollarSign size={18} />, adminOnly: true },
+      { id: 'payroll-export', label: 'Payroll Export', icon: <DollarSign size={18} />, adminOnly: true },
     ],
   },
   {
     label: 'Admin',
     items: [
-      { id: 'admin', label: 'Admin Panel', icon: <Shield size={18} />, adminOnly: true },
+      { id: 'approval-queue', label: 'Admin Panel', icon: <Shield size={18} />, adminOnly: true },
     ],
   },
 ];
 
 export default function Sidebar({ currentPage, onNavigate, isAdmin }: SidebarProps) {
+  // Treat stock-requests-archive as part of stock-requests for active state
+  const effectivePage = currentPage === 'stock-requests-archive' ? 'stock-requests' : currentPage;
+
   return (
     <aside className="w-64 min-h-screen flex flex-col" style={{ backgroundColor: 'oklch(0.1 0.005 0)' }}>
       {/* Brand Header */}
@@ -110,7 +120,7 @@ export default function Sidebar({ currentPage, onNavigate, isAdmin }: SidebarPro
               </div>
               <ul className="space-y-0.5">
                 {visibleItems.map((item) => {
-                  const isActive = currentPage === item.id;
+                  const isActive = effectivePage === item.id;
                   return (
                     <li key={item.id}>
                       <button

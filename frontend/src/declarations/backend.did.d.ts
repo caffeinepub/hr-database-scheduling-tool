@@ -34,6 +34,13 @@ export interface Badge {
 }
 export type BadgeId = string;
 export type CategoryId = string;
+export type DayOfWeek = { 'tuesday' : null } |
+  { 'wednesday' : null } |
+  { 'saturday' : null } |
+  { 'thursday' : null } |
+  { 'sunday' : null } |
+  { 'friday' : null } |
+  { 'monday' : null };
 export interface Document {
   'id' : DocumentId,
   'title' : string,
@@ -131,6 +138,8 @@ export type OrderStatus = { 'ok' : null } |
   { 'orderRequired' : null } |
   { 'ordered' : null };
 export type RecordId = string;
+export type Recurrence = { 'none' : null } |
+  { 'weekly' : DayOfWeek };
 export interface Resource {
   'id' : ResourceId,
   'title' : string,
@@ -177,6 +186,38 @@ export interface StaffBadge {
   'employeeId' : EmployeeId,
 }
 export type StaffBadgeId = string;
+export interface StockRequest {
+  'id' : StockRequestId,
+  'status' : StockRequestStatus,
+  'submitterName' : string,
+  'experience' : string,
+  'notes' : string,
+  'createdTimestamp' : bigint,
+  'itemName' : string,
+  'quantity' : bigint,
+  'deliveredTimestamp' : [] | [bigint],
+}
+export type StockRequestId = bigint;
+export type StockRequestStatus = { 'requested' : null } |
+  { 'ordered' : null } |
+  { 'delivered' : null } |
+  { 'archived' : null };
+export type TaskAssignee = { 'everyone' : null } |
+  { 'employee' : EmployeeId };
+export type TaskId = string;
+export interface ToDoTask {
+  'id' : TaskId,
+  'durationMins' : bigint,
+  'completedBy' : [] | [Principal],
+  'assignee' : TaskAssignee,
+  'title' : string,
+  'creator' : Principal,
+  'date' : [] | [bigint],
+  'description' : string,
+  'recurrence' : Recurrence,
+  'completedTimestamp' : [] | [bigint],
+  'createdTimestamp' : bigint,
+}
 export interface TrainingRecord {
   'id' : RecordId,
   'status' : TrainingStatus,
@@ -240,8 +281,14 @@ export interface _SERVICE {
   'addShiftNote' : ActorMethod<[ShiftNote], undefined>,
   'addSicknessRecord' : ActorMethod<[SicknessRecord], undefined>,
   'addTrainingRecord' : ActorMethod<[TrainingRecord], undefined>,
+  'archiveOldDeliveredRequests' : ActorMethod<[], undefined>,
   'assignBadgeToStaff' : ActorMethod<[StaffBadge], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'createStockRequest' : ActorMethod<
+    [string, string, bigint, string, string],
+    StockRequestId
+  >,
+  'createTask' : ActorMethod<[ToDoTask], undefined>,
   'deleteDocument' : ActorMethod<[DocumentId], undefined>,
   'deleteItem' : ActorMethod<[InventoryItemId], undefined>,
   'deleteManagerNote' : ActorMethod<[ManagerNoteId], undefined>,
@@ -272,6 +319,13 @@ export interface _SERVICE {
     Array<SicknessRecord>
   >,
   'getStaffBadges' : ActorMethod<[EmployeeId], Array<StaffBadge>>,
+  'getStockRequestById' : ActorMethod<[StockRequestId], [] | [StockRequest]>,
+  'getStockRequestsByStatus' : ActorMethod<
+    [StockRequestStatus],
+    Array<StockRequest>
+  >,
+  'getTasks' : ActorMethod<[], Array<ToDoTask>>,
+  'getTasksForToday' : ActorMethod<[DayOfWeek], Array<ToDoTask>>,
   'getTrainingRecordsByEmployee' : ActorMethod<
     [EmployeeId],
     Array<TrainingRecord>
@@ -282,10 +336,10 @@ export interface _SERVICE {
   'isCallerApproved' : ActorMethod<[], boolean>,
   'listApprovals' : ActorMethod<[], Array<UserApprovalInfo>>,
   'markAdminLoggedInSuccessfully' : ActorMethod<[], boolean>,
+  'markTaskComplete' : ActorMethod<[TaskId], undefined>,
   'markWinnerBonus' : ActorMethod<[string], undefined>,
   'removeBadgeFromStaff' : ActorMethod<[StaffBadgeId], undefined>,
   'requestApproval' : ActorMethod<[], undefined>,
-  'resetAdminLoginCheck' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setApproval' : ActorMethod<[Principal, ApprovalStatus], undefined>,
   'setMonthWinner' : ActorMethod<[string, EmployeeId], undefined>,
@@ -302,6 +356,10 @@ export interface _SERVICE {
   'updateManagerNote' : ActorMethod<[ManagerNote], undefined>,
   'updateResource' : ActorMethod<[Resource], undefined>,
   'updateShift' : ActorMethod<[Shift], undefined>,
+  'updateStockRequestStatus' : ActorMethod<
+    [StockRequestId, StockRequestStatus],
+    undefined
+  >,
   'updateTrainingRecord' : ActorMethod<[TrainingRecord], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

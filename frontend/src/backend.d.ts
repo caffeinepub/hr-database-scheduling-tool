@@ -17,6 +17,7 @@ export interface TrainingRecord {
     employeeId: EmployeeId;
 }
 export type StaffBadgeId = string;
+export type CategoryId = string;
 export interface Document {
     id: DocumentId;
     title: string;
@@ -44,6 +45,7 @@ export interface Badge {
     category: string;
     iconKey: string;
 }
+export type NominationId = string;
 export type RecordId = string;
 export interface ShiftNote {
     id: RecordId;
@@ -52,7 +54,21 @@ export interface ShiftNote {
     createdTimestamp: bigint;
     shiftId: ShiftId;
 }
-export type NominationId = string;
+export type Recurrence = {
+    __kind__: "none";
+    none: null;
+} | {
+    __kind__: "weekly";
+    weekly: DayOfWeek;
+};
+export type TaskAssignee = {
+    __kind__: "everyone";
+    everyone: null;
+} | {
+    __kind__: "employee";
+    employee: EmployeeId;
+};
+export type ShiftId = string;
 export interface InventoryItem {
     categoryId: CategoryId;
     itemId: InventoryItemId;
@@ -69,19 +85,18 @@ export interface InventoryItem {
     price?: number;
     orderFrequency: string;
 }
-export type ShiftId = string;
 export interface InventoryCategory {
     categoryId: CategoryId;
     name: string;
     description: string;
 }
-export type EmployeeId = string;
-export type DocumentId = string;
 export interface NominationWinner {
     month: string;
     hasReceivedBonus: boolean;
     employeeId: EmployeeId;
 }
+export type StockRequestId = bigint;
+export type EmployeeId = string;
 export interface Employee {
     id: EmployeeId;
     role: EmployeeRole;
@@ -102,6 +117,7 @@ export interface StaffBadge {
     badgeId: BadgeId;
     employeeId: EmployeeId;
 }
+export type DocumentId = string;
 export interface HolidayRequest {
     id: HolidayRequestId;
     status: HolidayRequestStatus;
@@ -111,6 +127,20 @@ export interface HolidayRequest {
     startDate: bigint;
     reason?: string;
 }
+export interface ToDoTask {
+    id: TaskId;
+    durationMins: bigint;
+    completedBy?: Principal;
+    assignee: TaskAssignee;
+    title: string;
+    creator: Principal;
+    date?: bigint;
+    description: string;
+    recurrence: Recurrence;
+    completedTimestamp?: bigint;
+    createdTimestamp: bigint;
+}
+export type ManagerNoteId = string;
 export interface ManagerNote {
     id: ManagerNoteId;
     content: string;
@@ -119,7 +149,6 @@ export interface ManagerNote {
     authorEmployeeId: EmployeeId;
     employeeId: EmployeeId;
 }
-export type ManagerNoteId = string;
 export interface AppraisalRecord {
     id: RecordId;
     scheduledDate: bigint;
@@ -133,7 +162,18 @@ export interface UserApprovalInfo {
     status: ApprovalStatus;
     principal: Principal;
 }
-export type HolidayRequestId = string;
+export type TaskId = string;
+export interface StockRequest {
+    id: StockRequestId;
+    status: StockRequestStatus;
+    submitterName: string;
+    experience: string;
+    notes: string;
+    createdTimestamp: bigint;
+    itemName: string;
+    quantity: bigint;
+    deliveredTimestamp?: bigint;
+}
 export interface SicknessRecord {
     id: RecordId;
     absenceStartDate: bigint;
@@ -150,7 +190,7 @@ export interface Resource {
     isRestricted: boolean;
     category: ResourceCategory;
 }
-export type CategoryId = string;
+export type HolidayRequestId = string;
 export type ResourceId = string;
 export interface Nomination {
     id: NominationId;
@@ -173,6 +213,15 @@ export enum ApprovalStatus {
     pending = "pending",
     approved = "approved",
     rejected = "rejected"
+}
+export enum DayOfWeek {
+    tuesday = "tuesday",
+    wednesday = "wednesday",
+    saturday = "saturday",
+    thursday = "thursday",
+    sunday = "sunday",
+    friday = "friday",
+    monday = "monday"
 }
 export enum DocumentCategory {
     other = "other",
@@ -207,6 +256,12 @@ export enum ResourceCategory {
     logins = "logins",
     prices = "prices"
 }
+export enum StockRequestStatus {
+    requested = "requested",
+    ordered = "ordered",
+    delivered = "delivered",
+    archived = "archived"
+}
 export enum TrainingStatus {
     pending = "pending",
     completed = "completed",
@@ -230,8 +285,11 @@ export interface backendInterface {
     addShiftNote(note: ShiftNote): Promise<void>;
     addSicknessRecord(record: SicknessRecord): Promise<void>;
     addTrainingRecord(record: TrainingRecord): Promise<void>;
+    archiveOldDeliveredRequests(): Promise<void>;
     assignBadgeToStaff(assignment: StaffBadge): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    createStockRequest(itemName: string, experience: string, quantity: bigint, notes: string, submitterName: string): Promise<StockRequestId>;
+    createTask(task: ToDoTask): Promise<void>;
     deleteDocument(id: DocumentId): Promise<void>;
     deleteItem(itemId: InventoryItemId): Promise<void>;
     deleteManagerNote(id: ManagerNoteId): Promise<void>;
@@ -256,6 +314,10 @@ export interface backendInterface {
     getShiftsByEmployee(employeeId: EmployeeId): Promise<Array<Shift>>;
     getSicknessRecordsByEmployee(employeeId: EmployeeId): Promise<Array<SicknessRecord>>;
     getStaffBadges(employeeId: EmployeeId): Promise<Array<StaffBadge>>;
+    getStockRequestById(id: StockRequestId): Promise<StockRequest | null>;
+    getStockRequestsByStatus(status: StockRequestStatus): Promise<Array<StockRequest>>;
+    getTasks(): Promise<Array<ToDoTask>>;
+    getTasksForToday(dayOfWeek: DayOfWeek): Promise<Array<ToDoTask>>;
     getTrainingRecordsByEmployee(employeeId: EmployeeId): Promise<Array<TrainingRecord>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWinnerByMonth(month: string): Promise<NominationWinner | null>;
@@ -263,10 +325,10 @@ export interface backendInterface {
     isCallerApproved(): Promise<boolean>;
     listApprovals(): Promise<Array<UserApprovalInfo>>;
     markAdminLoggedInSuccessfully(): Promise<boolean>;
+    markTaskComplete(taskId: TaskId): Promise<void>;
     markWinnerBonus(month: string): Promise<void>;
     removeBadgeFromStaff(assignmentId: StaffBadgeId): Promise<void>;
     requestApproval(): Promise<void>;
-    resetAdminLoginCheck(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
     setMonthWinner(month: string, employeeId: EmployeeId): Promise<void>;
@@ -280,5 +342,6 @@ export interface backendInterface {
     updateManagerNote(note: ManagerNote): Promise<void>;
     updateResource(resource: Resource): Promise<void>;
     updateShift(shift: Shift): Promise<void>;
+    updateStockRequestStatus(id: StockRequestId, newStatus: StockRequestStatus): Promise<void>;
     updateTrainingRecord(record: TrainingRecord): Promise<void>;
 }

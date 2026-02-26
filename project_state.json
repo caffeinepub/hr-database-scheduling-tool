@@ -1,43 +1,49 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "An inventory/staff management app for an Escape Room Company (also offering birthday parties, axe throwing, laser tag, and TV Game Show Experiences). Features include inventory viewing, Internet Identity login, role-based edit access, and staff profile gamification with manager-assignable badges.",
+  "summary": "Escape room/venue management hub with task management, a To Do section on the hub dashboard, employee database, and a stock request system for experiences/buildings.",
   "architectural_notes": [
-    "App is for an Escape Room Company also offering birthday parties, axe throwing, laser tag, and TV Game Show Experiences",
-    "UI colour palette: red, white, and black as primary colours; all dropdowns must have solid (non-transparent) backgrounds"
+    "Stock request system is for escape room experiences and venue buildings (not food & drink stock management).",
+    "Stock request items auto-archive 7 days after being moved to Delivered status."
   ],
-  "known_issues": [
-    "Dropdown backgrounds are currently transparent and need to be set to a solid colour"
-  ],
-  "isFixRequest": false,
+  "known_issues": [],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-restyle-the-entire-application-with-a-bold-red-white-and-black-colour-scheme-that-fits-an-escape-room-brand-replace-the-current-plain-monochrome-palette-with-a-rich-theme-use-deep-vivid-reds-as-primary-accent-colours-clean-white-for-content-surfaces-and-black-near-black-for-backgrounds-and-sidebars-apply-this-consistently-across-the-header-sidebar-navigation-items-buttons-badges-stat-cards-page-backgrounds-tables-and-form-controls-typography-and-iconography-should-also-reflect-this-palette-the-result-should-feel-immersive-and-on-brand-energetic-but-readable",
-      "title": "Restyle the entire application with a bold red, white, and black colour scheme that fits an Escape Room brand. Replace the current plain monochrome palette with a rich theme: use deep/vivid reds as primary accent colours, clean white for content surfaces, and black/near-black for backgrounds and sidebars. Apply this consistently across the header, sidebar, navigation items, buttons, badges, stat cards, page backgrounds, tables, and form controls. Typography and iconography should also reflect this palette. The result should feel immersive and on-brand — energetic but readable.",
+      "id": "feature-create-a-stock-requests-page-frontend-src-pages-stockrequestspage-tsx-with-a-submission-form-that-collects-item-name-text-input-experience-or-building-dropdown-selector-quantity-number-input-and-a-comment-textarea-the-dropdown-must-include-exactly-these-options-milton-general-the-happy-institute-the-dollhouse-wizard-of-oz-st-george-s-general-break-the-bank-marvellous-magic-school-riddled-hell-house-the-don-s-revenge-whodunit-battle-masters-fec-general-time-raiders-laser-quest-retro-arcade-7-sins-csi-disco-csi-mafia-karaoke-lounge-karaoke-disco-like-tv-game-show-splatter-room",
+      "title": "Create a Stock Requests page (frontend/src/pages/StockRequestsPage.tsx) with a submission form that collects: item name (text input), experience or building (dropdown selector), quantity (number input), and a comment (textarea). The dropdown must include exactly these options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-all-dropdown-and-select-menus-so-their-background-is-a-solid-colour-rather-than-transparent-dropdowns-e-g-role-selects-category-filters-date-pickers-status-selects-in-forms-and-tables-must-display-an-opaque-background-that-matches-the-updated-theme-either-white-off-white-for-light-surfaces-or-the-dark-background-for-dark-surfaces-the-dropdown-must-be-fully-readable-regardless-of-what-is-rendered-behind-it",
-      "title": "Fix all dropdown and select menus so their background is a solid colour rather than transparent. Dropdowns (e.g. role selects, category filters, date pickers, status selects in forms and tables) must display an opaque background that matches the updated theme — either white/off-white for light surfaces or the dark background for dark surfaces. The dropdown must be fully readable regardless of what is rendered behind it.",
+      "id": "feature-add-react-query-hooks-in-frontend-src-hooks-usequeries-ts-for-stock-requests-usegetstockrequestsbystatus-usecreatestockrequest-useupdatestockrequeststatus-usearchivedeliveredrequests-and-usegetarchivedstockrequests",
+      "title": "Add React Query hooks in frontend/src/hooks/useQueries.ts for stock requests: useGetStockRequestsByStatus, useCreateStockRequest, useUpdateStockRequestStatus, useArchiveDeliveredRequests, and useGetArchivedStockRequests.",
       "reqIds": [
-        "REQ-2"
+        "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-badges-tab-to-the-employee-profile-page-employeeprofilepage-tsx-this-tab-should-display-all-badges-currently-assigned-to-the-employee-as-visual-badge-cards-each-showing-the-badge-emoji-name-description-category-colour-chip-date-assigned-assigning-manager-s-name-and-optional-note-when-the-viewer-is-a-manager-or-admin-show-an-assign-badge-button-that-opens-a-modal-assignbadgemodal-allowing-them-to-select-a-badge-from-the-full-badge-list-grouped-by-category-optionally-add-a-note-and-confirm-the-assignment-managers-admins-should-also-be-able-to-remove-an-assigned-badge-via-a-remove-button-on-each-badge-card-use-the-new-react-query-hooks-for-getstaffbadges-and-assignbadgetostaff-and-removebadgefromstaff-style-badge-cards-using-the-red-white-black-theme-with-category-coloured-accents",
-      "title": "Add a 'Badges' tab to the Employee Profile page (`EmployeeProfilePage.tsx`). This tab should display all badges currently assigned to the employee as visual badge cards — each showing the badge emoji, name, description, category colour chip, date assigned, assigning manager's name, and optional note. When the viewer is a manager or admin, show an 'Assign Badge' button that opens a modal (`AssignBadgeModal`) allowing them to select a badge from the full badge list (grouped by category), optionally add a note, and confirm the assignment. Managers/admins should also be able to remove an assigned badge via a remove button on each badge card. Use the new React Query hooks for `getStaffBadges` and `assignBadgeToStaff` and `removeBadgeFromStaff`. Style badge cards using the red/white/black theme with category-coloured accents.",
+      "id": "feature-implement-the-kanban-dashboard-on-the-stock-requests-page-with-three-columns-requested-ordered-and-delivered-each-stock-request-card-must-display-the-item-name-experience-building-quantity-and-comment-cards-must-support-both-drag-and-drop-and-a-manual-status-change-button-menu-to-move-them-between-columns-on-page-load-trigger-the-archivedeliveredrequests-backend-function-to-automatically-move-any-delivered-items-older-than-7-days-to-the-archive",
+      "title": "Implement the kanban dashboard on the Stock Requests page with three columns: Requested, Ordered, and Delivered. Each stock request card must display the item name, experience/building, quantity, and comment. Cards must support both drag-and-drop and a manual status-change button/menu to move them between columns. On page load, trigger the archiveDeliveredRequests backend function to automatically move any delivered items older than 7 days to the archive.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-stock-request-archive-page-frontend-src-pages-stockrequestarchivepage-tsx-that-displays-all-archived-stock-requests-in-a-table-or-card-list-showing-item-name-experience-building-quantity-comment-date-submitted-and-date-delivered-add-a-clearly-visible-link-from-the-stock-requests-page-to-this-archive-page",
+      "title": "Create a Stock Request Archive page (frontend/src/pages/StockRequestArchivePage.tsx) that displays all archived stock requests in a table or card list, showing item name, experience/building, quantity, comment, date submitted, and date delivered. Add a clearly visible link from the Stock Requests page to this archive page.",
       "reqIds": [
         "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-react-query-hooks-for-the-new-badge-endpoints-in-usequeries-ts-usegetbadges-fetches-all-badge-definitions-usegetstaffbadges-employeeid-fetches-badge-assignments-for-a-specific-employee-useassignbadgetostaff-mutation-and-useremovebadgefromstaff-mutation-invalidate-the-staff-badges-query-on-successful-assign-or-remove",
-      "title": "Add React Query hooks for the new badge endpoints in `useQueries.ts`: `useGetBadges()` (fetches all badge definitions), `useGetStaffBadges(employeeId)` (fetches badge assignments for a specific employee), `useAssignBadgeToStaff()` (mutation), and `useRemoveBadgeFromStaff()` (mutation). Invalidate the staff badges query on successful assign or remove.",
+      "id": "feature-add-stock-requests-and-stock-request-archive-as-navigable-routes-in-the-app-router-frontend-src-app-tsx-and-include-a-stock-requests-entry-in-the-sidebar-navigation-frontend-src-components-layout-sidebar-tsx-under-an-appropriate-group",
+      "title": "Add Stock Requests and Stock Request Archive as navigable routes in the app router (frontend/src/App.tsx) and include a Stock Requests entry in the sidebar navigation (frontend/src/components/layout/Sidebar.tsx) under an appropriate group.",
       "reqIds": [
         "REQ-6"
       ],
@@ -47,35 +53,33 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Improve UI colour scheme to use red, white, and black more broadly; fix transparent dropdown backgrounds to use solid colours",
+      "summary": "Fix To Do items not appearing in the hub (only showing on To Do page)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Add gamification to staff profiles — managers can assign themed badges (e.g. perfect attendance, positive feedback, good review) suited to an Escape Room Company running birthday parties, axe throwing, laser tag, and TV Game Show Experiences",
+      "summary": "Stock request system: submit requests with item name, experience/building, quantity, comment. Dashboard with Requested/Ordered/Delivered sections, drag/mark to move between sections. Items in Delivered auto-archive after 7 days with an archive page for historical deliveries. Locations: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add 34 employees to the database: Robert Doughty, Cameron Ingram, Reece Kelly, Chelsea Osmond, Robert Jones, Rhys Oliver, Ivana Stoneham, Luke Collins, Helen Hutchins, Alex Faulkner, Claire Read, Drew Ribbens, Erin Tree, Ellanor Hodge, Ellenor Vicary, Isabelle Mcleod, Kudakwashe Ngowera, Lucy Selway, Luke Burns, MHD Alaa Alackam, Matthew Burke, Matthew Corley, Mitchell Kelshaw, Nicole Mason, Peter Hutchins, Philip Jacobs, Rowan Sutherland, Sam Jackaman, Sophie Moore, Stephanie Tuitt, Tabitha Richards, Toby Harrison, Tommie Russell, William Gardner.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Add a gamification badge system to the backend. Define a `Badge` type with fields: id (Text), name (Text), description (Text), category (Text — e.g. 'Attendance', 'Performance', 'Experience', 'Customer', 'Team'), iconKey (Text — a key referencing a frontend icon/emoji), and createdAt (Int). Define a `StaffBadge` type representing an assignment with fields: id (Text), employeeId (Text), badgeId (Text), assignedBy (Text — manager's employeeId), assignedAt (Int), and note (opt Text). Store badges in a stable `HashMap<Text, Badge>` and staff badge assignments in a stable `HashMap<Text, StaffBadge>`. Seed a set of initial badges appropriate for an Escape Room Company (see REQ-4 for the badge list). Expose backend methods: `getBadges() → async [Badge]`, `addBadge(badge: Badge) → async Result`, `getStaffBadges(employeeId: Text) → async [StaffBadge]`, `assignBadgeToStaff(assignment: StaffBadge) → async Result` (manager/admin only), `removeBadgeFromStaff(assignmentId: Text) → async Result` (manager/admin only).",
+      "summary": "Add backend Motoko data structures and methods for stock requests. Each stock request record must store: a unique ID, item name, experience/building, quantity, comment, status (one of: #requested, #ordered, #delivered, #archived), creation timestamp, delivered timestamp (optional), and submitter name. Expose update functions to create a request, move a request to a new status, and query requests by status. Implement a function to move all delivered requests older than 7 days to archived status, callable on page load or via a scheduled check.",
       "reqIds": [
-        "REQ-3"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Seed the following themed badges appropriate for The Panic Room (Escape Rooms, birthday parties, axe throwing, laser tag, TV Game Show Experiences). Each badge should have a name, short description, category, and an emoji iconKey. Include at minimum: **Attendance & Reliability** — 'Perfect Attendance' (zero absences in a period), 'Early Bird' (consistently early to shifts), 'Reliable Hero' (never missed a shift); **Performance & Reviews** — 'Five Star Review' (received an outstanding customer review), 'Crowd Favourite' (multiple positive feedback submissions), 'Top Performer' (excellent appraisal score); **Experience-Specific** — 'Escape Master' (specialist in escape room experiences), 'Party Starter' (exceptional birthday party host), 'Axe Legend' (top-rated axe throwing guide), 'Laser Commander' (laser tag expert), 'Game Show Star' (TV Game Show experience specialist); **Team & Culture** — 'Team Player' (recognised by peers for collaboration), 'Mentorship Badge' (helped train a new team member), 'Going the Extra Mile' (above-and-beyond effort recognised by a manager); **Milestones** — '1 Year Anniversary', '3 Year Anniversary', '5 Year Anniversary'.",
-      "reqIds": [
-        "REQ-4"
+        "REQ-2"
       ],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "The Panic Room Staff Hub",
+  "projectName": "Escape Room Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

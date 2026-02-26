@@ -187,6 +187,38 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const StockRequestId = IDL.Nat;
+export const TaskId = IDL.Text;
+export const TaskAssignee = IDL.Variant({
+  'everyone' : IDL.Null,
+  'employee' : EmployeeId,
+});
+export const DayOfWeek = IDL.Variant({
+  'tuesday' : IDL.Null,
+  'wednesday' : IDL.Null,
+  'saturday' : IDL.Null,
+  'thursday' : IDL.Null,
+  'sunday' : IDL.Null,
+  'friday' : IDL.Null,
+  'monday' : IDL.Null,
+});
+export const Recurrence = IDL.Variant({
+  'none' : IDL.Null,
+  'weekly' : DayOfWeek,
+});
+export const ToDoTask = IDL.Record({
+  'id' : TaskId,
+  'durationMins' : IDL.Nat,
+  'completedBy' : IDL.Opt(IDL.Principal),
+  'assignee' : TaskAssignee,
+  'title' : IDL.Text,
+  'creator' : IDL.Principal,
+  'date' : IDL.Opt(IDL.Int),
+  'description' : IDL.Text,
+  'recurrence' : Recurrence,
+  'completedTimestamp' : IDL.Opt(IDL.Int),
+  'createdTimestamp' : IDL.Int,
+});
 export const HolidayRequestId = IDL.Text;
 export const HolidayRequestStatus = IDL.Variant({
   'pending' : IDL.Null,
@@ -214,6 +246,23 @@ export const Nomination = IDL.Record({
   'submittedAt' : IDL.Int,
   'nominatorEmployeeId' : EmployeeId,
   'reason' : IDL.Text,
+});
+export const StockRequestStatus = IDL.Variant({
+  'requested' : IDL.Null,
+  'ordered' : IDL.Null,
+  'delivered' : IDL.Null,
+  'archived' : IDL.Null,
+});
+export const StockRequest = IDL.Record({
+  'id' : StockRequestId,
+  'status' : StockRequestStatus,
+  'submitterName' : IDL.Text,
+  'experience' : IDL.Text,
+  'notes' : IDL.Text,
+  'createdTimestamp' : IDL.Int,
+  'itemName' : IDL.Text,
+  'quantity' : IDL.Nat,
+  'deliveredTimestamp' : IDL.Opt(IDL.Int),
 });
 export const NominationWinner = IDL.Record({
   'month' : IDL.Text,
@@ -270,8 +319,15 @@ export const idlService = IDL.Service({
   'addShiftNote' : IDL.Func([ShiftNote], [], []),
   'addSicknessRecord' : IDL.Func([SicknessRecord], [], []),
   'addTrainingRecord' : IDL.Func([TrainingRecord], [], []),
+  'archiveOldDeliveredRequests' : IDL.Func([], [], []),
   'assignBadgeToStaff' : IDL.Func([StaffBadge], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'createStockRequest' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text],
+      [StockRequestId],
+      [],
+    ),
+  'createTask' : IDL.Func([ToDoTask], [], []),
   'deleteDocument' : IDL.Func([DocumentId], [], []),
   'deleteItem' : IDL.Func([InventoryItemId], [], []),
   'deleteManagerNote' : IDL.Func([ManagerNoteId], [], []),
@@ -324,6 +380,18 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getStaffBadges' : IDL.Func([EmployeeId], [IDL.Vec(StaffBadge)], ['query']),
+  'getStockRequestById' : IDL.Func(
+      [StockRequestId],
+      [IDL.Opt(StockRequest)],
+      ['query'],
+    ),
+  'getStockRequestsByStatus' : IDL.Func(
+      [StockRequestStatus],
+      [IDL.Vec(StockRequest)],
+      ['query'],
+    ),
+  'getTasks' : IDL.Func([], [IDL.Vec(ToDoTask)], ['query']),
+  'getTasksForToday' : IDL.Func([DayOfWeek], [IDL.Vec(ToDoTask)], ['query']),
   'getTrainingRecordsByEmployee' : IDL.Func(
       [EmployeeId],
       [IDL.Vec(TrainingRecord)],
@@ -343,10 +411,10 @@ export const idlService = IDL.Service({
   'isCallerApproved' : IDL.Func([], [IDL.Bool], ['query']),
   'listApprovals' : IDL.Func([], [IDL.Vec(UserApprovalInfo)], ['query']),
   'markAdminLoggedInSuccessfully' : IDL.Func([], [IDL.Bool], []),
+  'markTaskComplete' : IDL.Func([TaskId], [], []),
   'markWinnerBonus' : IDL.Func([IDL.Text], [], []),
   'removeBadgeFromStaff' : IDL.Func([StaffBadgeId], [], []),
   'requestApproval' : IDL.Func([], [], []),
-  'resetAdminLoginCheck' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
   'setMonthWinner' : IDL.Func([IDL.Text, EmployeeId], [], []),
@@ -364,6 +432,11 @@ export const idlService = IDL.Service({
   'updateManagerNote' : IDL.Func([ManagerNote], [], []),
   'updateResource' : IDL.Func([Resource], [], []),
   'updateShift' : IDL.Func([Shift], [], []),
+  'updateStockRequestStatus' : IDL.Func(
+      [StockRequestId, StockRequestStatus],
+      [],
+      [],
+    ),
   'updateTrainingRecord' : IDL.Func([TrainingRecord], [], []),
 });
 
@@ -549,6 +622,35 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const StockRequestId = IDL.Nat;
+  const TaskId = IDL.Text;
+  const TaskAssignee = IDL.Variant({
+    'everyone' : IDL.Null,
+    'employee' : EmployeeId,
+  });
+  const DayOfWeek = IDL.Variant({
+    'tuesday' : IDL.Null,
+    'wednesday' : IDL.Null,
+    'saturday' : IDL.Null,
+    'thursday' : IDL.Null,
+    'sunday' : IDL.Null,
+    'friday' : IDL.Null,
+    'monday' : IDL.Null,
+  });
+  const Recurrence = IDL.Variant({ 'none' : IDL.Null, 'weekly' : DayOfWeek });
+  const ToDoTask = IDL.Record({
+    'id' : TaskId,
+    'durationMins' : IDL.Nat,
+    'completedBy' : IDL.Opt(IDL.Principal),
+    'assignee' : TaskAssignee,
+    'title' : IDL.Text,
+    'creator' : IDL.Principal,
+    'date' : IDL.Opt(IDL.Int),
+    'description' : IDL.Text,
+    'recurrence' : Recurrence,
+    'completedTimestamp' : IDL.Opt(IDL.Int),
+    'createdTimestamp' : IDL.Int,
+  });
   const HolidayRequestId = IDL.Text;
   const HolidayRequestStatus = IDL.Variant({
     'pending' : IDL.Null,
@@ -576,6 +678,23 @@ export const idlFactory = ({ IDL }) => {
     'submittedAt' : IDL.Int,
     'nominatorEmployeeId' : EmployeeId,
     'reason' : IDL.Text,
+  });
+  const StockRequestStatus = IDL.Variant({
+    'requested' : IDL.Null,
+    'ordered' : IDL.Null,
+    'delivered' : IDL.Null,
+    'archived' : IDL.Null,
+  });
+  const StockRequest = IDL.Record({
+    'id' : StockRequestId,
+    'status' : StockRequestStatus,
+    'submitterName' : IDL.Text,
+    'experience' : IDL.Text,
+    'notes' : IDL.Text,
+    'createdTimestamp' : IDL.Int,
+    'itemName' : IDL.Text,
+    'quantity' : IDL.Nat,
+    'deliveredTimestamp' : IDL.Opt(IDL.Int),
   });
   const NominationWinner = IDL.Record({
     'month' : IDL.Text,
@@ -632,8 +751,15 @@ export const idlFactory = ({ IDL }) => {
     'addShiftNote' : IDL.Func([ShiftNote], [], []),
     'addSicknessRecord' : IDL.Func([SicknessRecord], [], []),
     'addTrainingRecord' : IDL.Func([TrainingRecord], [], []),
+    'archiveOldDeliveredRequests' : IDL.Func([], [], []),
     'assignBadgeToStaff' : IDL.Func([StaffBadge], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'createStockRequest' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text],
+        [StockRequestId],
+        [],
+      ),
+    'createTask' : IDL.Func([ToDoTask], [], []),
     'deleteDocument' : IDL.Func([DocumentId], [], []),
     'deleteItem' : IDL.Func([InventoryItemId], [], []),
     'deleteManagerNote' : IDL.Func([ManagerNoteId], [], []),
@@ -694,6 +820,18 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getStaffBadges' : IDL.Func([EmployeeId], [IDL.Vec(StaffBadge)], ['query']),
+    'getStockRequestById' : IDL.Func(
+        [StockRequestId],
+        [IDL.Opt(StockRequest)],
+        ['query'],
+      ),
+    'getStockRequestsByStatus' : IDL.Func(
+        [StockRequestStatus],
+        [IDL.Vec(StockRequest)],
+        ['query'],
+      ),
+    'getTasks' : IDL.Func([], [IDL.Vec(ToDoTask)], ['query']),
+    'getTasksForToday' : IDL.Func([DayOfWeek], [IDL.Vec(ToDoTask)], ['query']),
     'getTrainingRecordsByEmployee' : IDL.Func(
         [EmployeeId],
         [IDL.Vec(TrainingRecord)],
@@ -713,10 +851,10 @@ export const idlFactory = ({ IDL }) => {
     'isCallerApproved' : IDL.Func([], [IDL.Bool], ['query']),
     'listApprovals' : IDL.Func([], [IDL.Vec(UserApprovalInfo)], ['query']),
     'markAdminLoggedInSuccessfully' : IDL.Func([], [IDL.Bool], []),
+    'markTaskComplete' : IDL.Func([TaskId], [], []),
     'markWinnerBonus' : IDL.Func([IDL.Text], [], []),
     'removeBadgeFromStaff' : IDL.Func([StaffBadgeId], [], []),
     'requestApproval' : IDL.Func([], [], []),
-    'resetAdminLoginCheck' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
     'setMonthWinner' : IDL.Func([IDL.Text, EmployeeId], [], []),
@@ -734,6 +872,11 @@ export const idlFactory = ({ IDL }) => {
     'updateManagerNote' : IDL.Func([ManagerNote], [], []),
     'updateResource' : IDL.Func([Resource], [], []),
     'updateShift' : IDL.Func([Shift], [], []),
+    'updateStockRequestStatus' : IDL.Func(
+        [StockRequestId, StockRequestStatus],
+        [],
+        [],
+      ),
     'updateTrainingRecord' : IDL.Func([TrainingRecord], [], []),
   });
 };

@@ -3,16 +3,16 @@ import List "mo:core/List";
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
 import Text "mo:core/Text";
-import Order "mo:core/Order";
+import Nat "mo:core/Nat";
 import Runtime "mo:core/Runtime";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Principal "mo:core/Principal";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
-import Migration "migration";
+import Time "mo:core/Time";
+import Order "mo:core/Order";
 
-(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -29,12 +29,70 @@ actor {
   type InventoryItemId = Text;
   type BadgeId = Text;
   type StaffBadgeId = Text;
+  type TaskId = Text;
 
   // Roles
   public type EmployeeRole = {
     #admin;
     #manager;
     #employee;
+  };
+
+  // Stock Request
+  public type StockRequestId = Nat;
+
+  public type StockRequest = {
+    id : StockRequestId;
+    itemName : Text;
+    experience : Text;
+    quantity : Nat;
+    notes : Text;
+    status : StockRequestStatus;
+    createdTimestamp : Int;
+    deliveredTimestamp : ?Int;
+    submitterName : Text;
+  };
+
+  public type StockRequestStatus = {
+    #requested;
+    #ordered;
+    #delivered;
+    #archived;
+  };
+
+  // To-Do Task Types
+  public type Recurrence = {
+    #none;
+    #weekly : DayOfWeek;
+  };
+
+  public type DayOfWeek = {
+    #monday;
+    #tuesday;
+    #wednesday;
+    #thursday;
+    #friday;
+    #saturday;
+    #sunday;
+  };
+
+  public type ToDoTask = {
+    id : TaskId;
+    title : Text;
+    description : Text;
+    durationMins : Nat;
+    assignee : TaskAssignee;
+    recurrence : Recurrence;
+    date : ?Int;
+    creator : Principal;
+    createdTimestamp : Int;
+    completedBy : ?Principal;
+    completedTimestamp : ?Int;
+  };
+
+  public type TaskAssignee = {
+    #everyone;
+    #employee : EmployeeId;
   };
 
   // State for user system, initialized on upgrade to new actor
@@ -44,27 +102,20 @@ actor {
   // User approval state (full backward compatibility with old instances).
   let approvalState = UserApproval.initState(accessControlState);
 
+  // To-Do Tasks Storage
+  let toDoTaskMap = Map.empty<TaskId, ToDoTask>();
+
   public query ({ caller }) func isCallerApproved() : async Bool {
     AccessControl.hasPermission(accessControlState, caller, #admin) or UserApproval.isApproved(approvalState, caller);
   };
 
-  // Public shared method to be called after persistent check of admin login credentials
   public shared ({ caller }) func markAdminLoggedInSuccessfully() : async Bool {
     AccessControl.assignRole(accessControlState, caller, caller, #admin);
     UserApproval.setApproval(approvalState, caller, #approved);
     true;
   };
 
-  // Deprecated: no longer needed, but kept for interface compatibility
-  public shared ({ caller }) func resetAdminLoginCheck() : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can reset the admin login check");
-    };
-  };
-
   public shared ({ caller }) func requestApproval() : async () {
-    // Overwritten to always auto-approve
-    // auto-approval only applies when a user is explicitly requesting approval via the UI
     UserApproval.setApproval(approvalState, caller, #approved);
   };
 
@@ -109,7 +160,6 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
-
     // Always auto-approve when initially saving a user profile
     UserApproval.setApproval(approvalState, caller, #approved);
   };
@@ -353,6 +403,10 @@ actor {
   let badgeMap = Map.empty<BadgeId, Badge>();
   let staffBadgeMap = Map.empty<StaffBadgeId, StaffBadge>();
 
+  // Persistent Stock Request Storage
+  var nextStockRequestId = 1;
+  let stockRequests = Map.empty<StockRequestId, StockRequest>();
+
   // Inventory Methods
   public query ({ caller }) func getAllCategories() : async [InventoryCategory] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -409,6 +463,99 @@ actor {
       Runtime.trap("Item does not exist!");
     };
     inventoryItems.remove(itemId);
+  };
+
+  // Stock Requests
+
+  // Any authenticated user can create a stock request
+  public shared ({ caller }) func createStockRequest(
+    itemName : Text,
+    experience : Text,
+    quantity : Nat,
+    notes : Text,
+    submitterName : Text
+  ) : async StockRequestId {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create stock requests");
+    };
+    let requestId = nextStockRequestId;
+    nextStockRequestId += 1;
+
+    let newRequest : StockRequest = {
+      id = requestId;
+      itemName;
+      experience;
+      quantity;
+      notes;
+      status = #requested;
+      createdTimestamp = Time.now();
+      deliveredTimestamp = null;
+      submitterName;
+    };
+
+    stockRequests.add(requestId, newRequest);
+    requestId;
+  };
+
+  // Only admins can move a stock request to a new status
+  public shared ({ caller }) func updateStockRequestStatus(id : StockRequestId, newStatus : StockRequestStatus) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can update stock request status");
+    };
+    switch (stockRequests.get(id)) {
+      case (null) { Runtime.trap("Stock request not found") };
+      case (?existing) {
+        let updatedRequest = switch (newStatus, existing.status) {
+          case (#delivered, _) { { existing with status = newStatus; deliveredTimestamp = ?Time.now() } };
+          case (#archived, #delivered) { { existing with status = newStatus } };
+          case (_) { { existing with status = newStatus } };
+        };
+        stockRequests.add(id, updatedRequest);
+      };
+    };
+  };
+
+  // Any authenticated user can trigger archiving of old delivered requests (e.g. on page load)
+  public shared ({ caller }) func archiveOldDeliveredRequests() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can trigger archiving of old requests");
+    };
+    let now = Time.now();
+    for ((id, request) in stockRequests.entries()) {
+      if (request.status == #delivered) {
+        switch (request.deliveredTimestamp) {
+          case (?deliveredTime) {
+            if (now - deliveredTime > 7 * 24 * 60 * 60 * 1_000_000_000) {
+              let archivedRequest = { request with status = #archived };
+              stockRequests.add(id, archivedRequest);
+            };
+          };
+          case (null) { () };
+        };
+      };
+    };
+  };
+
+  // Any authenticated user can query stock requests by status
+  public query ({ caller }) func getStockRequestsByStatus(status : StockRequestStatus) : async [StockRequest] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view stock requests");
+    };
+    let filtered = List.empty<StockRequest>();
+    for ((_, request) in stockRequests.entries()) {
+      if (request.status == status) {
+        filtered.add(request);
+      };
+    };
+    filtered.toArray();
+  };
+
+  // Any authenticated user can fetch a stock request by ID
+  public query ({ caller }) func getStockRequestById(id : StockRequestId) : async ?StockRequest {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view stock requests");
+    };
+    stockRequests.get(id);
   };
 
   // Employees
@@ -894,5 +1041,71 @@ actor {
       Runtime.trap("Staff badge assignment does not exist!");
     };
     staffBadgeMap.remove(assignmentId);
+  };
+
+  // To-Do Task Methods
+  public shared ({ caller }) func createTask(task : ToDoTask) : async () {
+    if (not (hasManagerOrAdminRole(caller) and AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only managers and admins can create tasks");
+    };
+
+    if (toDoTaskMap.containsKey(task.id)) {
+      Runtime.trap("Task already exists!");
+    };
+
+    toDoTaskMap.add(task.id, task);
+  };
+
+  func hasManagerOrAdminRole(caller : Principal) : Bool {
+    let userRole = AccessControl.getUserRole(accessControlState, caller);
+    switch (userRole) {
+      case (#admin) { true };
+      case (#manager) { true };
+      case (_) { false };
+    };
+  };
+
+  public query ({ caller }) func getTasks() : async [ToDoTask] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view tasks");
+    };
+    toDoTaskMap.values().toArray();
+  };
+
+  public query ({ caller }) func getTasksForToday(dayOfWeek : DayOfWeek) : async [ToDoTask] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view tasks for today");
+    };
+
+    toDoTaskMap.values().filter(
+      func(task) {
+        switch (task.recurrence) {
+          case (#weekly day) { day == dayOfWeek };
+          case (#none) { false };
+        };
+      }
+    ).toArray();
+  };
+
+  public shared ({ caller }) func markTaskComplete(taskId : TaskId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can complete tasks");
+    };
+
+    switch (toDoTaskMap.get(taskId)) {
+      case (null) { Runtime.trap("Task does not exist!") };
+      case (?task) {
+        if (task.completedBy != null) {
+          Runtime.trap("Task already completed");
+        };
+        let currentTimestamp = Time.now();
+        let updatedTask : ToDoTask = {
+          task with
+          completedBy = ?caller;
+          completedTimestamp = ?currentTimestamp;
+        };
+        toDoTaskMap.add(taskId, updatedTask);
+      };
+    };
   };
 };

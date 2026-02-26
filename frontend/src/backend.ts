@@ -99,6 +99,7 @@ export interface TrainingRecord {
     employeeId: EmployeeId;
 }
 export type StaffBadgeId = string;
+export type CategoryId = string;
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
@@ -133,6 +134,7 @@ export interface Badge {
     category: string;
     iconKey: string;
 }
+export type NominationId = string;
 export type RecordId = string;
 export interface ShiftNote {
     id: RecordId;
@@ -141,7 +143,21 @@ export interface ShiftNote {
     createdTimestamp: bigint;
     shiftId: ShiftId;
 }
-export type NominationId = string;
+export type Recurrence = {
+    __kind__: "none";
+    none: null;
+} | {
+    __kind__: "weekly";
+    weekly: DayOfWeek;
+};
+export type TaskAssignee = {
+    __kind__: "everyone";
+    everyone: null;
+} | {
+    __kind__: "employee";
+    employee: EmployeeId;
+};
+export type ShiftId = string;
 export interface InventoryItem {
     categoryId: CategoryId;
     itemId: InventoryItemId;
@@ -158,19 +174,18 @@ export interface InventoryItem {
     price?: number;
     orderFrequency: string;
 }
-export type ShiftId = string;
 export interface InventoryCategory {
     categoryId: CategoryId;
     name: string;
     description: string;
 }
-export type EmployeeId = string;
-export type DocumentId = string;
 export interface NominationWinner {
     month: string;
     hasReceivedBonus: boolean;
     employeeId: EmployeeId;
 }
+export type StockRequestId = bigint;
+export type EmployeeId = string;
 export interface Employee {
     id: EmployeeId;
     role: EmployeeRole;
@@ -191,6 +206,7 @@ export interface StaffBadge {
     badgeId: BadgeId;
     employeeId: EmployeeId;
 }
+export type DocumentId = string;
 export interface HolidayRequest {
     id: HolidayRequestId;
     status: HolidayRequestStatus;
@@ -200,6 +216,20 @@ export interface HolidayRequest {
     startDate: bigint;
     reason?: string;
 }
+export interface ToDoTask {
+    id: TaskId;
+    durationMins: bigint;
+    completedBy?: Principal;
+    assignee: TaskAssignee;
+    title: string;
+    creator: Principal;
+    date?: bigint;
+    description: string;
+    recurrence: Recurrence;
+    completedTimestamp?: bigint;
+    createdTimestamp: bigint;
+}
+export type ManagerNoteId = string;
 export interface ManagerNote {
     id: ManagerNoteId;
     content: string;
@@ -208,7 +238,6 @@ export interface ManagerNote {
     authorEmployeeId: EmployeeId;
     employeeId: EmployeeId;
 }
-export type ManagerNoteId = string;
 export interface AppraisalRecord {
     id: RecordId;
     scheduledDate: bigint;
@@ -222,7 +251,18 @@ export interface UserApprovalInfo {
     status: ApprovalStatus;
     principal: Principal;
 }
-export type HolidayRequestId = string;
+export type TaskId = string;
+export interface StockRequest {
+    id: StockRequestId;
+    status: StockRequestStatus;
+    submitterName: string;
+    experience: string;
+    notes: string;
+    createdTimestamp: bigint;
+    itemName: string;
+    quantity: bigint;
+    deliveredTimestamp?: bigint;
+}
 export interface SicknessRecord {
     id: RecordId;
     absenceStartDate: bigint;
@@ -239,7 +279,7 @@ export interface Resource {
     isRestricted: boolean;
     category: ResourceCategory;
 }
-export type CategoryId = string;
+export type HolidayRequestId = string;
 export type ResourceId = string;
 export interface Nomination {
     id: NominationId;
@@ -249,13 +289,13 @@ export interface Nomination {
     nominatorEmployeeId: EmployeeId;
     reason: string;
 }
-export interface _CaffeineStorageRefillResult {
-    success?: boolean;
-    topped_up_amount?: bigint;
-}
 export interface UserProfile {
     name: string;
     employeeId?: EmployeeId;
+}
+export interface _CaffeineStorageRefillResult {
+    success?: boolean;
+    topped_up_amount?: bigint;
 }
 export enum AppraisalType {
     annual = "annual",
@@ -266,6 +306,15 @@ export enum ApprovalStatus {
     pending = "pending",
     approved = "approved",
     rejected = "rejected"
+}
+export enum DayOfWeek {
+    tuesday = "tuesday",
+    wednesday = "wednesday",
+    saturday = "saturday",
+    thursday = "thursday",
+    sunday = "sunday",
+    friday = "friday",
+    monday = "monday"
 }
 export enum DocumentCategory {
     other = "other",
@@ -300,6 +349,12 @@ export enum ResourceCategory {
     logins = "logins",
     prices = "prices"
 }
+export enum StockRequestStatus {
+    requested = "requested",
+    ordered = "ordered",
+    delivered = "delivered",
+    archived = "archived"
+}
 export enum TrainingStatus {
     pending = "pending",
     completed = "completed",
@@ -330,8 +385,11 @@ export interface backendInterface {
     addShiftNote(note: ShiftNote): Promise<void>;
     addSicknessRecord(record: SicknessRecord): Promise<void>;
     addTrainingRecord(record: TrainingRecord): Promise<void>;
+    archiveOldDeliveredRequests(): Promise<void>;
     assignBadgeToStaff(assignment: StaffBadge): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    createStockRequest(itemName: string, experience: string, quantity: bigint, notes: string, submitterName: string): Promise<StockRequestId>;
+    createTask(task: ToDoTask): Promise<void>;
     deleteDocument(id: DocumentId): Promise<void>;
     deleteItem(itemId: InventoryItemId): Promise<void>;
     deleteManagerNote(id: ManagerNoteId): Promise<void>;
@@ -356,6 +414,10 @@ export interface backendInterface {
     getShiftsByEmployee(employeeId: EmployeeId): Promise<Array<Shift>>;
     getSicknessRecordsByEmployee(employeeId: EmployeeId): Promise<Array<SicknessRecord>>;
     getStaffBadges(employeeId: EmployeeId): Promise<Array<StaffBadge>>;
+    getStockRequestById(id: StockRequestId): Promise<StockRequest | null>;
+    getStockRequestsByStatus(status: StockRequestStatus): Promise<Array<StockRequest>>;
+    getTasks(): Promise<Array<ToDoTask>>;
+    getTasksForToday(dayOfWeek: DayOfWeek): Promise<Array<ToDoTask>>;
     getTrainingRecordsByEmployee(employeeId: EmployeeId): Promise<Array<TrainingRecord>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWinnerByMonth(month: string): Promise<NominationWinner | null>;
@@ -363,10 +425,10 @@ export interface backendInterface {
     isCallerApproved(): Promise<boolean>;
     listApprovals(): Promise<Array<UserApprovalInfo>>;
     markAdminLoggedInSuccessfully(): Promise<boolean>;
+    markTaskComplete(taskId: TaskId): Promise<void>;
     markWinnerBonus(month: string): Promise<void>;
     removeBadgeFromStaff(assignmentId: StaffBadgeId): Promise<void>;
     requestApproval(): Promise<void>;
-    resetAdminLoginCheck(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
     setMonthWinner(month: string, employeeId: EmployeeId): Promise<void>;
@@ -380,9 +442,10 @@ export interface backendInterface {
     updateManagerNote(note: ManagerNote): Promise<void>;
     updateResource(resource: Resource): Promise<void>;
     updateShift(shift: Shift): Promise<void>;
+    updateStockRequestStatus(id: StockRequestId, newStatus: StockRequestStatus): Promise<void>;
     updateTrainingRecord(record: TrainingRecord): Promise<void>;
 }
-import type { AppraisalRecord as _AppraisalRecord, AppraisalType as _AppraisalType, ApprovalStatus as _ApprovalStatus, BadgeId as _BadgeId, CategoryId as _CategoryId, Document as _Document, DocumentCategory as _DocumentCategory, DocumentId as _DocumentId, Employee as _Employee, EmployeeId as _EmployeeId, EmployeeRole as _EmployeeRole, HolidayRequest as _HolidayRequest, HolidayRequestId as _HolidayRequestId, HolidayRequestStatus as _HolidayRequestStatus, InventoryItem as _InventoryItem, InventoryItemId as _InventoryItemId, ManagerNote as _ManagerNote, ManagerNoteId as _ManagerNoteId, ManagerNoteType as _ManagerNoteType, NominationWinner as _NominationWinner, OrderStatus as _OrderStatus, RecordId as _RecordId, Resource as _Resource, ResourceCategory as _ResourceCategory, ResourceId as _ResourceId, ShiftId as _ShiftId, ShiftNote as _ShiftNote, StaffBadge as _StaffBadge, StaffBadgeId as _StaffBadgeId, TrainingRecord as _TrainingRecord, TrainingStatus as _TrainingStatus, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { AppraisalRecord as _AppraisalRecord, AppraisalType as _AppraisalType, ApprovalStatus as _ApprovalStatus, BadgeId as _BadgeId, CategoryId as _CategoryId, DayOfWeek as _DayOfWeek, Document as _Document, DocumentCategory as _DocumentCategory, DocumentId as _DocumentId, Employee as _Employee, EmployeeId as _EmployeeId, EmployeeRole as _EmployeeRole, HolidayRequest as _HolidayRequest, HolidayRequestId as _HolidayRequestId, HolidayRequestStatus as _HolidayRequestStatus, InventoryItem as _InventoryItem, InventoryItemId as _InventoryItemId, ManagerNote as _ManagerNote, ManagerNoteId as _ManagerNoteId, ManagerNoteType as _ManagerNoteType, NominationWinner as _NominationWinner, OrderStatus as _OrderStatus, RecordId as _RecordId, Recurrence as _Recurrence, Resource as _Resource, ResourceCategory as _ResourceCategory, ResourceId as _ResourceId, ShiftId as _ShiftId, ShiftNote as _ShiftNote, StaffBadge as _StaffBadge, StaffBadgeId as _StaffBadgeId, StockRequest as _StockRequest, StockRequestId as _StockRequestId, StockRequestStatus as _StockRequestStatus, TaskAssignee as _TaskAssignee, TaskId as _TaskId, ToDoTask as _ToDoTask, TrainingRecord as _TrainingRecord, TrainingStatus as _TrainingStatus, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -651,6 +714,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async archiveOldDeliveredRequests(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.archiveOldDeliveredRequests();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.archiveOldDeliveredRequests();
+            return result;
+        }
+    }
     async assignBadgeToStaff(arg0: StaffBadge): Promise<void> {
         if (this.processError) {
             try {
@@ -676,6 +753,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n40(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async createStockRequest(arg0: string, arg1: string, arg2: bigint, arg3: string, arg4: string): Promise<StockRequestId> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createStockRequest(arg0, arg1, arg2, arg3, arg4);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createStockRequest(arg0, arg1, arg2, arg3, arg4);
+            return result;
+        }
+    }
+    async createTask(arg0: ToDoTask): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createTask(to_candid_ToDoTask_n42(this._uploadFile, this._downloadFile, arg0));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createTask(to_candid_ToDoTask_n42(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -767,42 +872,42 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllDocuments();
-                return from_candid_vec_n42(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n50(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllDocuments();
-            return from_candid_vec_n42(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n50(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAllEmployees(): Promise<Array<Employee>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllEmployees();
-                return from_candid_vec_n48(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n56(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllEmployees();
-            return from_candid_vec_n48(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n56(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAllHolidayRequests(): Promise<Array<HolidayRequest>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllHolidayRequests();
-                return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n61(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllHolidayRequests();
-            return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n61(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAllShifts(): Promise<Array<Shift>> {
@@ -823,14 +928,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getAppraisalsByEmployee(arg0);
-                return from_candid_vec_n58(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n66(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAppraisalsByEmployee(arg0);
-            return from_candid_vec_n58(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n66(this._uploadFile, this._downloadFile, result);
         }
     }
     async getBadges(): Promise<Array<Badge>> {
@@ -851,84 +956,84 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n71(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n71(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n67(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n75(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n67(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n75(this._uploadFile, this._downloadFile, result);
         }
     }
     async getEmployee(arg0: EmployeeId): Promise<Employee | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getEmployee(arg0);
-                return from_candid_opt_n69(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n77(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getEmployee(arg0);
-            return from_candid_opt_n69(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n77(this._uploadFile, this._downloadFile, result);
         }
     }
     async getHolidayRequestsByEmployee(arg0: EmployeeId): Promise<Array<HolidayRequest>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getHolidayRequestsByEmployee(arg0);
-                return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n61(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getHolidayRequestsByEmployee(arg0);
-            return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n61(this._uploadFile, this._downloadFile, result);
         }
     }
     async getItemsByCategory(arg0: CategoryId): Promise<Array<InventoryItem>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getItemsByCategory(arg0);
-                return from_candid_vec_n70(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n78(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getItemsByCategory(arg0);
-            return from_candid_vec_n70(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n78(this._uploadFile, this._downloadFile, result);
         }
     }
     async getManagerNotesByEmployee(arg0: EmployeeId): Promise<Array<ManagerNote>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getManagerNotesByEmployee(arg0);
-                return from_candid_vec_n77(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n85(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getManagerNotesByEmployee(arg0);
-            return from_candid_vec_n77(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n85(this._uploadFile, this._downloadFile, result);
         }
     }
     async getNominationsByMonth(arg0: string): Promise<Array<Nomination>> {
@@ -948,29 +1053,29 @@ export class Backend implements backendInterface {
     async getResources(arg0: ResourceCategory | null): Promise<Array<Resource>> {
         if (this.processError) {
             try {
-                const result = await this.actor.getResources(to_candid_opt_n82(this._uploadFile, this._downloadFile, arg0));
-                return from_candid_vec_n83(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getResources(to_candid_opt_n90(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n91(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getResources(to_candid_opt_n82(this._uploadFile, this._downloadFile, arg0));
-            return from_candid_vec_n83(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getResources(to_candid_opt_n90(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n91(this._uploadFile, this._downloadFile, result);
         }
     }
     async getShiftNotesByShift(arg0: ShiftId): Promise<Array<ShiftNote>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getShiftNotesByShift(arg0);
-                return from_candid_vec_n88(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n96(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getShiftNotesByShift(arg0);
-            return from_candid_vec_n88(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n96(this._uploadFile, this._downloadFile, result);
         }
     }
     async getShiftsByEmployee(arg0: EmployeeId): Promise<Array<Shift>> {
@@ -1005,56 +1110,112 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getStaffBadges(arg0);
-                return from_candid_vec_n91(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n99(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getStaffBadges(arg0);
-            return from_candid_vec_n91(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n99(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getStockRequestById(arg0: StockRequestId): Promise<StockRequest | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getStockRequestById(arg0);
+                return from_candid_opt_n102(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getStockRequestById(arg0);
+            return from_candid_opt_n102(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getStockRequestsByStatus(arg0: StockRequestStatus): Promise<Array<StockRequest>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getStockRequestsByStatus(to_candid_StockRequestStatus_n107(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n109(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getStockRequestsByStatus(to_candid_StockRequestStatus_n107(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n109(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getTasks(): Promise<Array<ToDoTask>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTasks();
+                return from_candid_vec_n110(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTasks();
+            return from_candid_vec_n110(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getTasksForToday(arg0: DayOfWeek): Promise<Array<ToDoTask>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTasksForToday(to_candid_DayOfWeek_n48(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n110(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTasksForToday(to_candid_DayOfWeek_n48(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n110(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTrainingRecordsByEmployee(arg0: EmployeeId): Promise<Array<TrainingRecord>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getTrainingRecordsByEmployee(arg0);
-                return from_candid_vec_n94(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n120(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getTrainingRecordsByEmployee(arg0);
-            return from_candid_vec_n94(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n120(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n71(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n71(this._uploadFile, this._downloadFile, result);
         }
     }
     async getWinnerByMonth(arg0: string): Promise<NominationWinner | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getWinnerByMonth(arg0);
-                return from_candid_opt_n99(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n125(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getWinnerByMonth(arg0);
-            return from_candid_opt_n99(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n125(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -1089,14 +1250,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.listApprovals();
-                return from_candid_vec_n100(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n126(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.listApprovals();
-            return from_candid_vec_n100(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n126(this._uploadFile, this._downloadFile, result);
         }
     }
     async markAdminLoggedInSuccessfully(): Promise<boolean> {
@@ -1110,6 +1271,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.markAdminLoggedInSuccessfully();
+            return result;
+        }
+    }
+    async markTaskComplete(arg0: TaskId): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.markTaskComplete(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.markTaskComplete(arg0);
             return result;
         }
     }
@@ -1155,45 +1330,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async resetAdminLoginCheck(): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.resetAdminLoginCheck();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.resetAdminLoginCheck();
-            return result;
-        }
-    }
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n105(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n131(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n105(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n131(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
     async setApproval(arg0: Principal, arg1: ApprovalStatus): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n107(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n133(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n107(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n133(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -1214,14 +1375,14 @@ export class Backend implements backendInterface {
     async submitHolidayRequest(arg0: HolidayRequest): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.submitHolidayRequest(to_candid_HolidayRequest_n109(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.submitHolidayRequest(to_candid_HolidayRequest_n135(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.submitHolidayRequest(to_candid_HolidayRequest_n109(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.submitHolidayRequest(to_candid_HolidayRequest_n135(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -1284,14 +1445,14 @@ export class Backend implements backendInterface {
     async updateHolidayRequestStatus(arg0: HolidayRequestId, arg1: HolidayRequestStatus): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateHolidayRequestStatus(arg0, to_candid_HolidayRequestStatus_n111(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.updateHolidayRequestStatus(arg0, to_candid_HolidayRequestStatus_n137(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateHolidayRequestStatus(arg0, to_candid_HolidayRequestStatus_n111(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.updateHolidayRequestStatus(arg0, to_candid_HolidayRequestStatus_n137(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -1351,6 +1512,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateStockRequestStatus(arg0: StockRequestId, arg1: StockRequestStatus): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateStockRequestStatus(arg0, to_candid_StockRequestStatus_n107(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateStockRequestStatus(arg0, to_candid_StockRequestStatus_n107(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
     async updateTrainingRecord(arg0: TrainingRecord): Promise<void> {
         if (this.processError) {
             try {
@@ -1366,103 +1541,250 @@ export class Backend implements backendInterface {
         }
     }
 }
-function from_candid_AppraisalRecord_n59(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AppraisalRecord): AppraisalRecord {
-    return from_candid_record_n60(_uploadFile, _downloadFile, value);
+function from_candid_AppraisalRecord_n67(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AppraisalRecord): AppraisalRecord {
+    return from_candid_record_n68(_uploadFile, _downloadFile, value);
 }
-function from_candid_AppraisalType_n61(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AppraisalType): AppraisalType {
-    return from_candid_variant_n62(_uploadFile, _downloadFile, value);
+function from_candid_AppraisalType_n69(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AppraisalType): AppraisalType {
+    return from_candid_variant_n70(_uploadFile, _downloadFile, value);
 }
-function from_candid_ApprovalStatus_n103(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ApprovalStatus): ApprovalStatus {
-    return from_candid_variant_n104(_uploadFile, _downloadFile, value);
+function from_candid_ApprovalStatus_n129(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ApprovalStatus): ApprovalStatus {
+    return from_candid_variant_n130(_uploadFile, _downloadFile, value);
 }
-function from_candid_DocumentCategory_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _DocumentCategory): DocumentCategory {
-    return from_candid_variant_n47(_uploadFile, _downloadFile, value);
+function from_candid_DayOfWeek_n118(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _DayOfWeek): DayOfWeek {
+    return from_candid_variant_n119(_uploadFile, _downloadFile, value);
 }
-function from_candid_Document_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Document): Document {
-    return from_candid_record_n44(_uploadFile, _downloadFile, value);
+function from_candid_DocumentCategory_n54(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _DocumentCategory): DocumentCategory {
+    return from_candid_variant_n55(_uploadFile, _downloadFile, value);
 }
-function from_candid_EmployeeRole_n51(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _EmployeeRole): EmployeeRole {
-    return from_candid_variant_n52(_uploadFile, _downloadFile, value);
+function from_candid_Document_n51(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Document): Document {
+    return from_candid_record_n52(_uploadFile, _downloadFile, value);
 }
-function from_candid_Employee_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Employee): Employee {
-    return from_candid_record_n50(_uploadFile, _downloadFile, value);
+function from_candid_EmployeeRole_n59(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _EmployeeRole): EmployeeRole {
+    return from_candid_variant_n60(_uploadFile, _downloadFile, value);
 }
-function from_candid_HolidayRequestStatus_n56(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _HolidayRequestStatus): HolidayRequestStatus {
-    return from_candid_variant_n57(_uploadFile, _downloadFile, value);
+function from_candid_Employee_n57(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Employee): Employee {
+    return from_candid_record_n58(_uploadFile, _downloadFile, value);
 }
-function from_candid_HolidayRequest_n54(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _HolidayRequest): HolidayRequest {
-    return from_candid_record_n55(_uploadFile, _downloadFile, value);
+function from_candid_HolidayRequestStatus_n64(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _HolidayRequestStatus): HolidayRequestStatus {
+    return from_candid_variant_n65(_uploadFile, _downloadFile, value);
 }
-function from_candid_InventoryItem_n71(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _InventoryItem): InventoryItem {
-    return from_candid_record_n72(_uploadFile, _downloadFile, value);
+function from_candid_HolidayRequest_n62(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _HolidayRequest): HolidayRequest {
+    return from_candid_record_n63(_uploadFile, _downloadFile, value);
 }
-function from_candid_ManagerNoteType_n80(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ManagerNoteType): ManagerNoteType {
-    return from_candid_variant_n81(_uploadFile, _downloadFile, value);
+function from_candid_InventoryItem_n79(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _InventoryItem): InventoryItem {
+    return from_candid_record_n80(_uploadFile, _downloadFile, value);
 }
-function from_candid_ManagerNote_n78(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ManagerNote): ManagerNote {
-    return from_candid_record_n79(_uploadFile, _downloadFile, value);
+function from_candid_ManagerNoteType_n88(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ManagerNoteType): ManagerNoteType {
+    return from_candid_variant_n89(_uploadFile, _downloadFile, value);
 }
-function from_candid_OrderStatus_n74(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _OrderStatus): OrderStatus {
-    return from_candid_variant_n75(_uploadFile, _downloadFile, value);
+function from_candid_ManagerNote_n86(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ManagerNote): ManagerNote {
+    return from_candid_record_n87(_uploadFile, _downloadFile, value);
 }
-function from_candid_ResourceCategory_n86(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ResourceCategory): ResourceCategory {
-    return from_candid_variant_n87(_uploadFile, _downloadFile, value);
+function from_candid_OrderStatus_n82(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _OrderStatus): OrderStatus {
+    return from_candid_variant_n83(_uploadFile, _downloadFile, value);
 }
-function from_candid_Resource_n84(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Resource): Resource {
-    return from_candid_record_n85(_uploadFile, _downloadFile, value);
+function from_candid_Recurrence_n116(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Recurrence): Recurrence {
+    return from_candid_variant_n117(_uploadFile, _downloadFile, value);
 }
-function from_candid_ShiftNote_n89(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ShiftNote): ShiftNote {
-    return from_candid_record_n90(_uploadFile, _downloadFile, value);
+function from_candid_ResourceCategory_n94(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ResourceCategory): ResourceCategory {
+    return from_candid_variant_n95(_uploadFile, _downloadFile, value);
 }
-function from_candid_StaffBadge_n92(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _StaffBadge): StaffBadge {
+function from_candid_Resource_n92(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Resource): Resource {
     return from_candid_record_n93(_uploadFile, _downloadFile, value);
 }
-function from_candid_TrainingRecord_n95(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TrainingRecord): TrainingRecord {
-    return from_candid_record_n96(_uploadFile, _downloadFile, value);
+function from_candid_ShiftNote_n97(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ShiftNote): ShiftNote {
+    return from_candid_record_n98(_uploadFile, _downloadFile, value);
 }
-function from_candid_TrainingStatus_n97(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TrainingStatus): TrainingStatus {
-    return from_candid_variant_n98(_uploadFile, _downloadFile, value);
+function from_candid_StaffBadge_n100(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _StaffBadge): StaffBadge {
+    return from_candid_record_n101(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserApprovalInfo_n101(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserApprovalInfo): UserApprovalInfo {
-    return from_candid_record_n102(_uploadFile, _downloadFile, value);
+function from_candid_StockRequestStatus_n105(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _StockRequestStatus): StockRequestStatus {
+    return from_candid_variant_n106(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserProfile_n64(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
-    return from_candid_record_n65(_uploadFile, _downloadFile, value);
+function from_candid_StockRequest_n103(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _StockRequest): StockRequest {
+    return from_candid_record_n104(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n67(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n68(_uploadFile, _downloadFile, value);
+function from_candid_TaskAssignee_n114(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TaskAssignee): TaskAssignee {
+    return from_candid_variant_n115(_uploadFile, _downloadFile, value);
+}
+function from_candid_ToDoTask_n111(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ToDoTask): ToDoTask {
+    return from_candid_record_n112(_uploadFile, _downloadFile, value);
+}
+function from_candid_TrainingRecord_n121(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TrainingRecord): TrainingRecord {
+    return from_candid_record_n122(_uploadFile, _downloadFile, value);
+}
+function from_candid_TrainingStatus_n123(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TrainingStatus): TrainingStatus {
+    return from_candid_variant_n124(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserApprovalInfo_n127(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserApprovalInfo): UserApprovalInfo {
+    return from_candid_record_n128(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserProfile_n72(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
+    return from_candid_record_n73(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserRole_n75(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n76(_uploadFile, _downloadFile, value);
 }
 function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+function from_candid_opt_n102(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_StockRequest]): StockRequest | null {
+    return value.length === 0 ? null : from_candid_StockRequest_n103(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n113(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n125(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_NominationWinner]): NominationWinner | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n53(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n63(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
-    return value.length === 0 ? null : from_candid_UserProfile_n64(_uploadFile, _downloadFile, value[0]);
-}
-function from_candid_opt_n66(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_EmployeeId]): EmployeeId | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n69(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Employee]): Employee | null {
-    return value.length === 0 ? null : from_candid_Employee_n49(_uploadFile, _downloadFile, value[0]);
-}
 function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n73(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
+function from_candid_opt_n71(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : from_candid_UserProfile_n72(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n74(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_EmployeeId]): EmployeeId | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n76(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [number]): number | null {
+function from_candid_opt_n77(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Employee]): Employee | null {
+    return value.length === 0 ? null : from_candid_Employee_n57(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n81(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n99(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_NominationWinner]): NominationWinner | null {
+function from_candid_opt_n84(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [number]): number | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n102(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n101(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _StaffBadgeId;
+    assignedAt: bigint;
+    assignedBy: _EmployeeId;
+    note: [] | [string];
+    badgeId: _BadgeId;
+    employeeId: _EmployeeId;
+}): {
+    id: StaffBadgeId;
+    assignedAt: bigint;
+    assignedBy: EmployeeId;
+    note?: string;
+    badgeId: BadgeId;
+    employeeId: EmployeeId;
+} {
+    return {
+        id: value.id,
+        assignedAt: value.assignedAt,
+        assignedBy: value.assignedBy,
+        note: record_opt_to_undefined(from_candid_opt_n53(_uploadFile, _downloadFile, value.note)),
+        badgeId: value.badgeId,
+        employeeId: value.employeeId
+    };
+}
+function from_candid_record_n104(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _StockRequestId;
+    status: _StockRequestStatus;
+    submitterName: string;
+    experience: string;
+    notes: string;
+    createdTimestamp: bigint;
+    itemName: string;
+    quantity: bigint;
+    deliveredTimestamp: [] | [bigint];
+}): {
+    id: StockRequestId;
+    status: StockRequestStatus;
+    submitterName: string;
+    experience: string;
+    notes: string;
+    createdTimestamp: bigint;
+    itemName: string;
+    quantity: bigint;
+    deliveredTimestamp?: bigint;
+} {
+    return {
+        id: value.id,
+        status: from_candid_StockRequestStatus_n105(_uploadFile, _downloadFile, value.status),
+        submitterName: value.submitterName,
+        experience: value.experience,
+        notes: value.notes,
+        createdTimestamp: value.createdTimestamp,
+        itemName: value.itemName,
+        quantity: value.quantity,
+        deliveredTimestamp: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.deliveredTimestamp))
+    };
+}
+function from_candid_record_n112(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _TaskId;
+    durationMins: bigint;
+    completedBy: [] | [Principal];
+    assignee: _TaskAssignee;
+    title: string;
+    creator: Principal;
+    date: [] | [bigint];
+    description: string;
+    recurrence: _Recurrence;
+    completedTimestamp: [] | [bigint];
+    createdTimestamp: bigint;
+}): {
+    id: TaskId;
+    durationMins: bigint;
+    completedBy?: Principal;
+    assignee: TaskAssignee;
+    title: string;
+    creator: Principal;
+    date?: bigint;
+    description: string;
+    recurrence: Recurrence;
+    completedTimestamp?: bigint;
+    createdTimestamp: bigint;
+} {
+    return {
+        id: value.id,
+        durationMins: value.durationMins,
+        completedBy: record_opt_to_undefined(from_candid_opt_n113(_uploadFile, _downloadFile, value.completedBy)),
+        assignee: from_candid_TaskAssignee_n114(_uploadFile, _downloadFile, value.assignee),
+        title: value.title,
+        creator: value.creator,
+        date: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.date)),
+        description: value.description,
+        recurrence: from_candid_Recurrence_n116(_uploadFile, _downloadFile, value.recurrence),
+        completedTimestamp: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.completedTimestamp)),
+        createdTimestamp: value.createdTimestamp
+    };
+}
+function from_candid_record_n122(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _RecordId;
+    status: _TrainingStatus;
+    title: string;
+    completionDate: [] | [bigint];
+    expiryDate: [] | [bigint];
+    description: string;
+    employeeId: _EmployeeId;
+}): {
+    id: RecordId;
+    status: TrainingStatus;
+    title: string;
+    completionDate?: bigint;
+    expiryDate?: bigint;
+    description: string;
+    employeeId: EmployeeId;
+} {
+    return {
+        id: value.id,
+        status: from_candid_TrainingStatus_n123(_uploadFile, _downloadFile, value.status),
+        title: value.title,
+        completionDate: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.completionDate)),
+        expiryDate: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.expiryDate)),
+        description: value.description,
+        employeeId: value.employeeId
+    };
+}
+function from_candid_record_n128(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     status: _ApprovalStatus;
     principal: Principal;
 }): {
@@ -1470,11 +1792,23 @@ function from_candid_record_n102(_uploadFile: (file: ExternalBlob) => Promise<Ui
     principal: Principal;
 } {
     return {
-        status: from_candid_ApprovalStatus_n103(_uploadFile, _downloadFile, value.status),
+        status: from_candid_ApprovalStatus_n129(_uploadFile, _downloadFile, value.status),
         principal: value.principal
     };
 }
-function from_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    success: [] | [boolean];
+    topped_up_amount: [] | [bigint];
+}): {
+    success?: boolean;
+    topped_up_amount?: bigint;
+} {
+    return {
+        success: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.success)),
+        topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
+    };
+}
+function from_candid_record_n52(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _DocumentId;
     title: string;
     content: [] | [string];
@@ -1496,27 +1830,15 @@ function from_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         id: value.id,
         title: value.title,
-        content: record_opt_to_undefined(from_candid_opt_n45(_uploadFile, _downloadFile, value.content)),
+        content: record_opt_to_undefined(from_candid_opt_n53(_uploadFile, _downloadFile, value.content)),
         description: value.description,
         isVisible: value.isVisible,
-        category: from_candid_DocumentCategory_n46(_uploadFile, _downloadFile, value.category),
+        category: from_candid_DocumentCategory_n54(_uploadFile, _downloadFile, value.category),
         uploadedAt: value.uploadedAt,
-        fileUrl: record_opt_to_undefined(from_candid_opt_n45(_uploadFile, _downloadFile, value.fileUrl))
+        fileUrl: record_opt_to_undefined(from_candid_opt_n53(_uploadFile, _downloadFile, value.fileUrl))
     };
 }
-function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    success: [] | [boolean];
-    topped_up_amount: [] | [bigint];
-}): {
-    success?: boolean;
-    topped_up_amount?: bigint;
-} {
-    return {
-        success: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.success)),
-        topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
-    };
-}
-function from_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n58(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _EmployeeId;
     role: _EmployeeRole;
     fullName: string;
@@ -1541,7 +1863,7 @@ function from_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         id: value.id,
-        role: from_candid_EmployeeRole_n51(_uploadFile, _downloadFile, value.role),
+        role: from_candid_EmployeeRole_n59(_uploadFile, _downloadFile, value.role),
         fullName: value.fullName,
         isActive: value.isActive,
         email: value.email,
@@ -1549,10 +1871,10 @@ function from_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise<Uin
         phone: value.phone,
         department: value.department,
         startDate: value.startDate,
-        accountLevel: from_candid_EmployeeRole_n51(_uploadFile, _downloadFile, value.accountLevel)
+        accountLevel: from_candid_EmployeeRole_n59(_uploadFile, _downloadFile, value.accountLevel)
     };
 }
-function from_candid_record_n55(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n63(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _HolidayRequestId;
     status: _HolidayRequestStatus;
     endDate: bigint;
@@ -1571,15 +1893,15 @@ function from_candid_record_n55(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         id: value.id,
-        status: from_candid_HolidayRequestStatus_n56(_uploadFile, _downloadFile, value.status),
+        status: from_candid_HolidayRequestStatus_n64(_uploadFile, _downloadFile, value.status),
         endDate: value.endDate,
         createdAt: value.createdAt,
         employeeId: value.employeeId,
         startDate: value.startDate,
-        reason: record_opt_to_undefined(from_candid_opt_n45(_uploadFile, _downloadFile, value.reason))
+        reason: record_opt_to_undefined(from_candid_opt_n53(_uploadFile, _downloadFile, value.reason))
     };
 }
-function from_candid_record_n60(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n68(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _RecordId;
     scheduledDate: bigint;
     appraisalType: _AppraisalType;
@@ -1597,13 +1919,13 @@ function from_candid_record_n60(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         id: value.id,
         scheduledDate: value.scheduledDate,
-        appraisalType: from_candid_AppraisalType_n61(_uploadFile, _downloadFile, value.appraisalType),
+        appraisalType: from_candid_AppraisalType_n69(_uploadFile, _downloadFile, value.appraisalType),
         employeeId: value.employeeId,
         notes: value.notes,
         isComplete: value.isComplete
     };
 }
-function from_candid_record_n65(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n73(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     name: string;
     employeeId: [] | [_EmployeeId];
 }): {
@@ -1612,10 +1934,10 @@ function from_candid_record_n65(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         name: value.name,
-        employeeId: record_opt_to_undefined(from_candid_opt_n66(_uploadFile, _downloadFile, value.employeeId))
+        employeeId: record_opt_to_undefined(from_candid_opt_n74(_uploadFile, _downloadFile, value.employeeId))
     };
 }
-function from_candid_record_n72(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n80(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     categoryId: _CategoryId;
     itemId: _InventoryItemId;
     lastStocktakeBy: [] | [string];
@@ -1649,21 +1971,21 @@ function from_candid_record_n72(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         categoryId: value.categoryId,
         itemId: value.itemId,
-        lastStocktakeBy: record_opt_to_undefined(from_candid_opt_n45(_uploadFile, _downloadFile, value.lastStocktakeBy)),
-        expectedDeliveryDate: record_opt_to_undefined(from_candid_opt_n73(_uploadFile, _downloadFile, value.expectedDeliveryDate)),
-        orderStatus: from_candid_OrderStatus_n74(_uploadFile, _downloadFile, value.orderStatus),
+        lastStocktakeBy: record_opt_to_undefined(from_candid_opt_n53(_uploadFile, _downloadFile, value.lastStocktakeBy)),
+        expectedDeliveryDate: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.expectedDeliveryDate)),
+        orderStatus: from_candid_OrderStatus_n82(_uploadFile, _downloadFile, value.orderStatus),
         supplier: value.supplier,
-        expiryDate: record_opt_to_undefined(from_candid_opt_n73(_uploadFile, _downloadFile, value.expiryDate)),
+        expiryDate: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.expiryDate)),
         name: value.name,
-        size: record_opt_to_undefined(from_candid_opt_n45(_uploadFile, _downloadFile, value.size)),
+        size: record_opt_to_undefined(from_candid_opt_n53(_uploadFile, _downloadFile, value.size)),
         currentStockCount: value.currentStockCount,
-        lastStocktakeDate: record_opt_to_undefined(from_candid_opt_n73(_uploadFile, _downloadFile, value.lastStocktakeDate)),
+        lastStocktakeDate: record_opt_to_undefined(from_candid_opt_n81(_uploadFile, _downloadFile, value.lastStocktakeDate)),
         minimumStockLevel: value.minimumStockLevel,
-        price: record_opt_to_undefined(from_candid_opt_n76(_uploadFile, _downloadFile, value.price)),
+        price: record_opt_to_undefined(from_candid_opt_n84(_uploadFile, _downloadFile, value.price)),
         orderFrequency: value.orderFrequency
     };
 }
-function from_candid_record_n79(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n87(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _ManagerNoteId;
     content: string;
     createdAt: bigint;
@@ -1682,12 +2004,12 @@ function from_candid_record_n79(_uploadFile: (file: ExternalBlob) => Promise<Uin
         id: value.id,
         content: value.content,
         createdAt: value.createdAt,
-        noteType: from_candid_ManagerNoteType_n80(_uploadFile, _downloadFile, value.noteType),
+        noteType: from_candid_ManagerNoteType_n88(_uploadFile, _downloadFile, value.noteType),
         authorEmployeeId: value.authorEmployeeId,
         employeeId: value.employeeId
     };
 }
-function from_candid_record_n85(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n93(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _ResourceId;
     title: string;
     content: string;
@@ -1708,10 +2030,10 @@ function from_candid_record_n85(_uploadFile: (file: ExternalBlob) => Promise<Uin
         content: value.content,
         createdAt: value.createdAt,
         isRestricted: value.isRestricted,
-        category: from_candid_ResourceCategory_n86(_uploadFile, _downloadFile, value.category)
+        category: from_candid_ResourceCategory_n94(_uploadFile, _downloadFile, value.category)
     };
 }
-function from_candid_record_n90(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n98(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _RecordId;
     noteText: string;
     employeeId: [] | [_EmployeeId];
@@ -1727,63 +2049,87 @@ function from_candid_record_n90(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         id: value.id,
         noteText: value.noteText,
-        employeeId: record_opt_to_undefined(from_candid_opt_n66(_uploadFile, _downloadFile, value.employeeId)),
+        employeeId: record_opt_to_undefined(from_candid_opt_n74(_uploadFile, _downloadFile, value.employeeId)),
         createdTimestamp: value.createdTimestamp,
         shiftId: value.shiftId
     };
 }
-function from_candid_record_n93(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: _StaffBadgeId;
-    assignedAt: bigint;
-    assignedBy: _EmployeeId;
-    note: [] | [string];
-    badgeId: _BadgeId;
-    employeeId: _EmployeeId;
-}): {
-    id: StaffBadgeId;
-    assignedAt: bigint;
-    assignedBy: EmployeeId;
-    note?: string;
-    badgeId: BadgeId;
-    employeeId: EmployeeId;
-} {
-    return {
-        id: value.id,
-        assignedAt: value.assignedAt,
-        assignedBy: value.assignedBy,
-        note: record_opt_to_undefined(from_candid_opt_n45(_uploadFile, _downloadFile, value.note)),
-        badgeId: value.badgeId,
-        employeeId: value.employeeId
-    };
+function from_candid_variant_n106(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    requested: null;
+} | {
+    ordered: null;
+} | {
+    delivered: null;
+} | {
+    archived: null;
+}): StockRequestStatus {
+    return "requested" in value ? StockRequestStatus.requested : "ordered" in value ? StockRequestStatus.ordered : "delivered" in value ? StockRequestStatus.delivered : "archived" in value ? StockRequestStatus.archived : value;
 }
-function from_candid_record_n96(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: _RecordId;
-    status: _TrainingStatus;
-    title: string;
-    completionDate: [] | [bigint];
-    expiryDate: [] | [bigint];
-    description: string;
-    employeeId: _EmployeeId;
+function from_candid_variant_n115(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    everyone: null;
+} | {
+    employee: _EmployeeId;
 }): {
-    id: RecordId;
-    status: TrainingStatus;
-    title: string;
-    completionDate?: bigint;
-    expiryDate?: bigint;
-    description: string;
-    employeeId: EmployeeId;
+    __kind__: "everyone";
+    everyone: null;
+} | {
+    __kind__: "employee";
+    employee: EmployeeId;
 } {
-    return {
-        id: value.id,
-        status: from_candid_TrainingStatus_n97(_uploadFile, _downloadFile, value.status),
-        title: value.title,
-        completionDate: record_opt_to_undefined(from_candid_opt_n73(_uploadFile, _downloadFile, value.completionDate)),
-        expiryDate: record_opt_to_undefined(from_candid_opt_n73(_uploadFile, _downloadFile, value.expiryDate)),
-        description: value.description,
-        employeeId: value.employeeId
-    };
+    return "everyone" in value ? {
+        __kind__: "everyone",
+        everyone: value.everyone
+    } : "employee" in value ? {
+        __kind__: "employee",
+        employee: value.employee
+    } : value;
 }
-function from_candid_variant_n104(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n117(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    none: null;
+} | {
+    weekly: _DayOfWeek;
+}): {
+    __kind__: "none";
+    none: null;
+} | {
+    __kind__: "weekly";
+    weekly: DayOfWeek;
+} {
+    return "none" in value ? {
+        __kind__: "none",
+        none: value.none
+    } : "weekly" in value ? {
+        __kind__: "weekly",
+        weekly: from_candid_DayOfWeek_n118(_uploadFile, _downloadFile, value.weekly)
+    } : value;
+}
+function from_candid_variant_n119(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    tuesday: null;
+} | {
+    wednesday: null;
+} | {
+    saturday: null;
+} | {
+    thursday: null;
+} | {
+    sunday: null;
+} | {
+    friday: null;
+} | {
+    monday: null;
+}): DayOfWeek {
+    return "tuesday" in value ? DayOfWeek.tuesday : "wednesday" in value ? DayOfWeek.wednesday : "saturday" in value ? DayOfWeek.saturday : "thursday" in value ? DayOfWeek.thursday : "sunday" in value ? DayOfWeek.sunday : "friday" in value ? DayOfWeek.friday : "monday" in value ? DayOfWeek.monday : value;
+}
+function from_candid_variant_n124(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    pending: null;
+} | {
+    completed: null;
+} | {
+    inProgress: null;
+}): TrainingStatus {
+    return "pending" in value ? TrainingStatus.pending : "completed" in value ? TrainingStatus.completed : "inProgress" in value ? TrainingStatus.inProgress : value;
+}
+function from_candid_variant_n130(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     pending: null;
 } | {
     approved: null;
@@ -1792,7 +2138,7 @@ function from_candid_variant_n104(_uploadFile: (file: ExternalBlob) => Promise<U
 }): ApprovalStatus {
     return "pending" in value ? ApprovalStatus.pending : "approved" in value ? ApprovalStatus.approved : "rejected" in value ? ApprovalStatus.rejected : value;
 }
-function from_candid_variant_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n55(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     other: null;
 } | {
     form: null;
@@ -1803,7 +2149,7 @@ function from_candid_variant_n47(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): DocumentCategory {
     return "other" in value ? DocumentCategory.other : "form" in value ? DocumentCategory.form : "handbook" in value ? DocumentCategory.handbook : "policy" in value ? DocumentCategory.policy : value;
 }
-function from_candid_variant_n52(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n60(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     manager: null;
 } | {
     admin: null;
@@ -1812,7 +2158,7 @@ function from_candid_variant_n52(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): EmployeeRole {
     return "manager" in value ? EmployeeRole.manager : "admin" in value ? EmployeeRole.admin : "employee" in value ? EmployeeRole.employee : value;
 }
-function from_candid_variant_n57(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n65(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     pending: null;
 } | {
     approved: null;
@@ -1821,7 +2167,7 @@ function from_candid_variant_n57(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): HolidayRequestStatus {
     return "pending" in value ? HolidayRequestStatus.pending : "approved" in value ? HolidayRequestStatus.approved : "declined" in value ? HolidayRequestStatus.declined : value;
 }
-function from_candid_variant_n62(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n70(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     annual: null;
 } | {
     midYear: null;
@@ -1830,7 +2176,7 @@ function from_candid_variant_n62(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): AppraisalType {
     return "annual" in value ? AppraisalType.annual : "midYear" in value ? AppraisalType.midYear : "probationary" in value ? AppraisalType.probationary : value;
 }
-function from_candid_variant_n68(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n76(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -1839,7 +2185,7 @@ function from_candid_variant_n68(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_variant_n75(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n83(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     ok: null;
 } | {
     orderRequired: null;
@@ -1848,7 +2194,7 @@ function from_candid_variant_n75(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): OrderStatus {
     return "ok" in value ? OrderStatus.ok : "orderRequired" in value ? OrderStatus.orderRequired : "ordered" in value ? OrderStatus.ordered : value;
 }
-function from_candid_variant_n81(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n89(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     concern: null;
 } | {
     sickness: null;
@@ -1859,7 +2205,7 @@ function from_candid_variant_n81(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): ManagerNoteType {
     return "concern" in value ? ManagerNoteType.concern : "sickness" in value ? ManagerNoteType.sickness : "performance" in value ? ManagerNoteType.performance : "general" in value ? ManagerNoteType.general : value;
 }
-function from_candid_variant_n87(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n95(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     forms: null;
 } | {
     other: null;
@@ -1870,47 +2216,44 @@ function from_candid_variant_n87(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): ResourceCategory {
     return "forms" in value ? ResourceCategory.forms : "other" in value ? ResourceCategory.other : "logins" in value ? ResourceCategory.logins : "prices" in value ? ResourceCategory.prices : value;
 }
-function from_candid_variant_n98(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    pending: null;
-} | {
-    completed: null;
-} | {
-    inProgress: null;
-}): TrainingStatus {
-    return "pending" in value ? TrainingStatus.pending : "completed" in value ? TrainingStatus.completed : "inProgress" in value ? TrainingStatus.inProgress : value;
+function from_candid_vec_n109(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_StockRequest>): Array<StockRequest> {
+    return value.map((x)=>from_candid_StockRequest_n103(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n100(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_UserApprovalInfo>): Array<UserApprovalInfo> {
-    return value.map((x)=>from_candid_UserApprovalInfo_n101(_uploadFile, _downloadFile, x));
+function from_candid_vec_n110(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ToDoTask>): Array<ToDoTask> {
+    return value.map((x)=>from_candid_ToDoTask_n111(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Document>): Array<Document> {
-    return value.map((x)=>from_candid_Document_n43(_uploadFile, _downloadFile, x));
+function from_candid_vec_n120(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_TrainingRecord>): Array<TrainingRecord> {
+    return value.map((x)=>from_candid_TrainingRecord_n121(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Employee>): Array<Employee> {
-    return value.map((x)=>from_candid_Employee_n49(_uploadFile, _downloadFile, x));
+function from_candid_vec_n126(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_UserApprovalInfo>): Array<UserApprovalInfo> {
+    return value.map((x)=>from_candid_UserApprovalInfo_n127(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n53(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_HolidayRequest>): Array<HolidayRequest> {
-    return value.map((x)=>from_candid_HolidayRequest_n54(_uploadFile, _downloadFile, x));
+function from_candid_vec_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Document>): Array<Document> {
+    return value.map((x)=>from_candid_Document_n51(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n58(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AppraisalRecord>): Array<AppraisalRecord> {
-    return value.map((x)=>from_candid_AppraisalRecord_n59(_uploadFile, _downloadFile, x));
+function from_candid_vec_n56(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Employee>): Array<Employee> {
+    return value.map((x)=>from_candid_Employee_n57(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n70(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_InventoryItem>): Array<InventoryItem> {
-    return value.map((x)=>from_candid_InventoryItem_n71(_uploadFile, _downloadFile, x));
+function from_candid_vec_n61(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_HolidayRequest>): Array<HolidayRequest> {
+    return value.map((x)=>from_candid_HolidayRequest_n62(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n77(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ManagerNote>): Array<ManagerNote> {
-    return value.map((x)=>from_candid_ManagerNote_n78(_uploadFile, _downloadFile, x));
+function from_candid_vec_n66(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AppraisalRecord>): Array<AppraisalRecord> {
+    return value.map((x)=>from_candid_AppraisalRecord_n67(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n83(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Resource>): Array<Resource> {
-    return value.map((x)=>from_candid_Resource_n84(_uploadFile, _downloadFile, x));
+function from_candid_vec_n78(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_InventoryItem>): Array<InventoryItem> {
+    return value.map((x)=>from_candid_InventoryItem_n79(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n88(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ShiftNote>): Array<ShiftNote> {
-    return value.map((x)=>from_candid_ShiftNote_n89(_uploadFile, _downloadFile, x));
+function from_candid_vec_n85(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ManagerNote>): Array<ManagerNote> {
+    return value.map((x)=>from_candid_ManagerNote_n86(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n91(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_StaffBadge>): Array<StaffBadge> {
-    return value.map((x)=>from_candid_StaffBadge_n92(_uploadFile, _downloadFile, x));
+function from_candid_vec_n91(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Resource>): Array<Resource> {
+    return value.map((x)=>from_candid_Resource_n92(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n94(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_TrainingRecord>): Array<TrainingRecord> {
-    return value.map((x)=>from_candid_TrainingRecord_n95(_uploadFile, _downloadFile, x));
+function from_candid_vec_n96(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ShiftNote>): Array<ShiftNote> {
+    return value.map((x)=>from_candid_ShiftNote_n97(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n99(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_StaffBadge>): Array<StaffBadge> {
+    return value.map((x)=>from_candid_StaffBadge_n100(_uploadFile, _downloadFile, x));
 }
 function to_candid_AppraisalRecord_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppraisalRecord): _AppraisalRecord {
     return to_candid_record_n9(_uploadFile, _downloadFile, value);
@@ -1918,8 +2261,11 @@ function to_candid_AppraisalRecord_n8(_uploadFile: (file: ExternalBlob) => Promi
 function to_candid_AppraisalType_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppraisalType): _AppraisalType {
     return to_candid_variant_n11(_uploadFile, _downloadFile, value);
 }
-function to_candid_ApprovalStatus_n107(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): _ApprovalStatus {
-    return to_candid_variant_n108(_uploadFile, _downloadFile, value);
+function to_candid_ApprovalStatus_n133(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): _ApprovalStatus {
+    return to_candid_variant_n134(_uploadFile, _downloadFile, value);
+}
+function to_candid_DayOfWeek_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DayOfWeek): _DayOfWeek {
+    return to_candid_variant_n49(_uploadFile, _downloadFile, value);
 }
 function to_candid_DocumentCategory_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DocumentCategory): _DocumentCategory {
     return to_candid_variant_n15(_uploadFile, _downloadFile, value);
@@ -1933,11 +2279,11 @@ function to_candid_EmployeeRole_n18(_uploadFile: (file: ExternalBlob) => Promise
 function to_candid_Employee_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Employee): _Employee {
     return to_candid_record_n17(_uploadFile, _downloadFile, value);
 }
-function to_candid_HolidayRequestStatus_n111(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HolidayRequestStatus): _HolidayRequestStatus {
-    return to_candid_variant_n112(_uploadFile, _downloadFile, value);
+function to_candid_HolidayRequestStatus_n137(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HolidayRequestStatus): _HolidayRequestStatus {
+    return to_candid_variant_n138(_uploadFile, _downloadFile, value);
 }
-function to_candid_HolidayRequest_n109(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HolidayRequest): _HolidayRequest {
-    return to_candid_record_n110(_uploadFile, _downloadFile, value);
+function to_candid_HolidayRequest_n135(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HolidayRequest): _HolidayRequest {
+    return to_candid_record_n136(_uploadFile, _downloadFile, value);
 }
 function to_candid_InventoryItem_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: InventoryItem): _InventoryItem {
     return to_candid_record_n21(_uploadFile, _downloadFile, value);
@@ -1951,6 +2297,9 @@ function to_candid_ManagerNote_n24(_uploadFile: (file: ExternalBlob) => Promise<
 function to_candid_OrderStatus_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): _OrderStatus {
     return to_candid_variant_n23(_uploadFile, _downloadFile, value);
 }
+function to_candid_Recurrence_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Recurrence): _Recurrence {
+    return to_candid_variant_n47(_uploadFile, _downloadFile, value);
+}
 function to_candid_ResourceCategory_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ResourceCategory): _ResourceCategory {
     return to_candid_variant_n31(_uploadFile, _downloadFile, value);
 }
@@ -1963,14 +2312,23 @@ function to_candid_ShiftNote_n32(_uploadFile: (file: ExternalBlob) => Promise<Ui
 function to_candid_StaffBadge_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StaffBadge): _StaffBadge {
     return to_candid_record_n39(_uploadFile, _downloadFile, value);
 }
+function to_candid_StockRequestStatus_n107(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StockRequestStatus): _StockRequestStatus {
+    return to_candid_variant_n108(_uploadFile, _downloadFile, value);
+}
+function to_candid_TaskAssignee_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TaskAssignee): _TaskAssignee {
+    return to_candid_variant_n45(_uploadFile, _downloadFile, value);
+}
+function to_candid_ToDoTask_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToDoTask): _ToDoTask {
+    return to_candid_record_n43(_uploadFile, _downloadFile, value);
+}
 function to_candid_TrainingRecord_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TrainingRecord): _TrainingRecord {
     return to_candid_record_n35(_uploadFile, _downloadFile, value);
 }
 function to_candid_TrainingStatus_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TrainingStatus): _TrainingStatus {
     return to_candid_variant_n37(_uploadFile, _downloadFile, value);
 }
-function to_candid_UserProfile_n105(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
-    return to_candid_record_n106(_uploadFile, _downloadFile, value);
+function to_candid_UserProfile_n131(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n132(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n41(_uploadFile, _downloadFile, value);
@@ -1981,47 +2339,8 @@ function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: Exte
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
     return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
-function to_candid_opt_n82(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ResourceCategory | null): [] | [_ResourceCategory] {
+function to_candid_opt_n90(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ResourceCategory | null): [] | [_ResourceCategory] {
     return value === null ? candid_none() : candid_some(to_candid_ResourceCategory_n30(_uploadFile, _downloadFile, value));
-}
-function to_candid_record_n106(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    name: string;
-    employeeId?: EmployeeId;
-}): {
-    name: string;
-    employeeId: [] | [_EmployeeId];
-} {
-    return {
-        name: value.name,
-        employeeId: value.employeeId ? candid_some(value.employeeId) : candid_none()
-    };
-}
-function to_candid_record_n110(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: HolidayRequestId;
-    status: HolidayRequestStatus;
-    endDate: bigint;
-    createdAt: bigint;
-    employeeId: EmployeeId;
-    startDate: bigint;
-    reason?: string;
-}): {
-    id: _HolidayRequestId;
-    status: _HolidayRequestStatus;
-    endDate: bigint;
-    createdAt: bigint;
-    employeeId: _EmployeeId;
-    startDate: bigint;
-    reason: [] | [string];
-} {
-    return {
-        id: value.id,
-        status: to_candid_HolidayRequestStatus_n111(_uploadFile, _downloadFile, value.status),
-        endDate: value.endDate,
-        createdAt: value.createdAt,
-        employeeId: value.employeeId,
-        startDate: value.startDate,
-        reason: value.reason ? candid_some(value.reason) : candid_none()
-    };
 }
 function to_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: DocumentId;
@@ -2051,6 +2370,45 @@ function to_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         category: to_candid_DocumentCategory_n14(_uploadFile, _downloadFile, value.category),
         uploadedAt: value.uploadedAt,
         fileUrl: value.fileUrl ? candid_some(value.fileUrl) : candid_none()
+    };
+}
+function to_candid_record_n132(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    name: string;
+    employeeId?: EmployeeId;
+}): {
+    name: string;
+    employeeId: [] | [_EmployeeId];
+} {
+    return {
+        name: value.name,
+        employeeId: value.employeeId ? candid_some(value.employeeId) : candid_none()
+    };
+}
+function to_candid_record_n136(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: HolidayRequestId;
+    status: HolidayRequestStatus;
+    endDate: bigint;
+    createdAt: bigint;
+    employeeId: EmployeeId;
+    startDate: bigint;
+    reason?: string;
+}): {
+    id: _HolidayRequestId;
+    status: _HolidayRequestStatus;
+    endDate: bigint;
+    createdAt: bigint;
+    employeeId: _EmployeeId;
+    startDate: bigint;
+    reason: [] | [string];
+} {
+    return {
+        id: value.id,
+        status: to_candid_HolidayRequestStatus_n137(_uploadFile, _downloadFile, value.status),
+        endDate: value.endDate,
+        createdAt: value.createdAt,
+        employeeId: value.employeeId,
+        startDate: value.startDate,
+        reason: value.reason ? candid_some(value.reason) : candid_none()
     };
 }
 function to_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -2266,6 +2624,45 @@ function to_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         employeeId: value.employeeId
     };
 }
+function to_candid_record_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: TaskId;
+    durationMins: bigint;
+    completedBy?: Principal;
+    assignee: TaskAssignee;
+    title: string;
+    creator: Principal;
+    date?: bigint;
+    description: string;
+    recurrence: Recurrence;
+    completedTimestamp?: bigint;
+    createdTimestamp: bigint;
+}): {
+    id: _TaskId;
+    durationMins: bigint;
+    completedBy: [] | [Principal];
+    assignee: _TaskAssignee;
+    title: string;
+    creator: Principal;
+    date: [] | [bigint];
+    description: string;
+    recurrence: _Recurrence;
+    completedTimestamp: [] | [bigint];
+    createdTimestamp: bigint;
+} {
+    return {
+        id: value.id,
+        durationMins: value.durationMins,
+        completedBy: value.completedBy ? candid_some(value.completedBy) : candid_none(),
+        assignee: to_candid_TaskAssignee_n44(_uploadFile, _downloadFile, value.assignee),
+        title: value.title,
+        creator: value.creator,
+        date: value.date ? candid_some(value.date) : candid_none(),
+        description: value.description,
+        recurrence: to_candid_Recurrence_n46(_uploadFile, _downloadFile, value.recurrence),
+        completedTimestamp: value.completedTimestamp ? candid_some(value.completedTimestamp) : candid_none(),
+        createdTimestamp: value.createdTimestamp
+    };
+}
 function to_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: RecordId;
     scheduledDate: bigint;
@@ -2290,19 +2687,23 @@ function to_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
         isComplete: value.isComplete
     };
 }
-function to_candid_variant_n108(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): {
-    pending: null;
+function to_candid_variant_n108(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StockRequestStatus): {
+    requested: null;
 } | {
-    approved: null;
+    ordered: null;
 } | {
-    rejected: null;
+    delivered: null;
+} | {
+    archived: null;
 } {
-    return value == ApprovalStatus.pending ? {
-        pending: null
-    } : value == ApprovalStatus.approved ? {
-        approved: null
-    } : value == ApprovalStatus.rejected ? {
-        rejected: null
+    return value == StockRequestStatus.requested ? {
+        requested: null
+    } : value == StockRequestStatus.ordered ? {
+        ordered: null
+    } : value == StockRequestStatus.delivered ? {
+        delivered: null
+    } : value == StockRequestStatus.archived ? {
+        archived: null
     } : value;
 }
 function to_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppraisalType): {
@@ -2320,7 +2721,22 @@ function to_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint
         probationary: null
     } : value;
 }
-function to_candid_variant_n112(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HolidayRequestStatus): {
+function to_candid_variant_n134(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): {
+    pending: null;
+} | {
+    approved: null;
+} | {
+    rejected: null;
+} {
+    return value == ApprovalStatus.pending ? {
+        pending: null
+    } : value == ApprovalStatus.approved ? {
+        approved: null
+    } : value == ApprovalStatus.rejected ? {
+        rejected: null
+    } : value;
+}
+function to_candid_variant_n138(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HolidayRequestStatus): {
     pending: null;
 } | {
     approved: null;
@@ -2450,6 +2866,71 @@ function to_candid_variant_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint
         user: null
     } : value == UserRole.guest ? {
         guest: null
+    } : value;
+}
+function to_candid_variant_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    __kind__: "everyone";
+    everyone: null;
+} | {
+    __kind__: "employee";
+    employee: EmployeeId;
+}): {
+    everyone: null;
+} | {
+    employee: _EmployeeId;
+} {
+    return value.__kind__ === "everyone" ? {
+        everyone: value.everyone
+    } : value.__kind__ === "employee" ? {
+        employee: value.employee
+    } : value;
+}
+function to_candid_variant_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    __kind__: "none";
+    none: null;
+} | {
+    __kind__: "weekly";
+    weekly: DayOfWeek;
+}): {
+    none: null;
+} | {
+    weekly: _DayOfWeek;
+} {
+    return value.__kind__ === "none" ? {
+        none: value.none
+    } : value.__kind__ === "weekly" ? {
+        weekly: to_candid_DayOfWeek_n48(_uploadFile, _downloadFile, value.weekly)
+    } : value;
+}
+function to_candid_variant_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DayOfWeek): {
+    tuesday: null;
+} | {
+    wednesday: null;
+} | {
+    saturday: null;
+} | {
+    thursday: null;
+} | {
+    sunday: null;
+} | {
+    friday: null;
+} | {
+    monday: null;
+} {
+    return value == DayOfWeek.tuesday ? {
+        tuesday: null
+    } : value == DayOfWeek.wednesday ? {
+        wednesday: null
+    } : value == DayOfWeek.saturday ? {
+        saturday: null
+    } : value == DayOfWeek.thursday ? {
+        thursday: null
+    } : value == DayOfWeek.sunday ? {
+        sunday: null
+    } : value == DayOfWeek.friday ? {
+        friday: null
+    } : value == DayOfWeek.monday ? {
+        monday: null
     } : value;
 }
 export interface CreateActorOptions {

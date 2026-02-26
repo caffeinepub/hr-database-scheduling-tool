@@ -1,115 +1,85 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T18:54:25.218Z",
+  "generatedAt": "2026-02-26T19:48:36.383Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 6,
-    "implemented": 4,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Restyle the entire application with a bold red, white, and black colour scheme that fits an Escape Room brand. Replace the current plain monochrome palette with a rich theme: use deep/vivid reds as primary accent colours, clean white for content surfaces, and black/near-black for backgrounds and sidebars. Apply this consistently across the header, sidebar, navigation items, buttons, badges, stat cards, page backgrounds, tables, and form controls. Typography and iconography should also reflect this palette. The result should feel immersive and on-brand — energetic but readable.",
+        "summary": "Create a Stock Requests page (frontend/src/pages/StockRequestsPage.tsx) with a submission form that collects: item name (text input), experience or building (dropdown selector), quantity (number input), and a comment (textarea). The dropdown must include exactly these options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/tailwind.config.js",
-          "frontend/src/index.css",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/components/layout/Header.tsx",
-          "frontend/src/pages/DashboardPage.tsx",
-          "frontend/src/pages/EmployeesPage.tsx",
-          "frontend/src/pages/EmployeeProfilePage.tsx",
-          "frontend/src/pages/SchedulingPage.tsx",
-          "frontend/src/pages/CompanyDocumentsPage.tsx",
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/components/employees/EmployeeTable.tsx",
-          "frontend/src/components/scheduling/ShiftCard.tsx"
+          "frontend/src/pages/StockRequestsPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/tailwind.config.js",
-          "frontend/src/index.css",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/components/layout/Header.tsx",
-          "frontend/src/pages/EmployeeProfilePage.tsx"
+          "frontend/src/pages/StockRequestsPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Fix all dropdown and select menus so their background is a solid colour rather than transparent. Dropdowns (e.g. role selects, category filters, date pickers, status selects in forms and tables) must display an opaque background that matches the updated theme — either white/off-white for light surfaces or the dark background for dark surfaces. The dropdown must be fully readable regardless of what is rendered behind it.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/components/employees/AddEmployeeModal.tsx",
-          "frontend/src/components/employees/EditEmployeeModal.tsx",
-          "frontend/src/components/profile/AddTrainingModal.tsx",
-          "frontend/src/components/profile/EditTrainingModal.tsx",
-          "frontend/src/components/profile/AddAppraisalModal.tsx",
-          "frontend/src/components/profile/AddManagerNoteModal.tsx",
-          "frontend/src/components/profile/EditManagerNoteModal.tsx",
-          "frontend/src/components/profile/ManagerNotesTab.tsx",
-          "frontend/src/components/documents/AddDocumentModal.tsx",
-          "frontend/src/components/documents/EditDocumentModal.tsx",
-          "frontend/src/components/resources/AddResourceModal.tsx",
-          "frontend/src/components/resources/EditResourceModal.tsx",
-          "frontend/src/components/scheduling/AddShiftModal.tsx",
-          "frontend/src/components/scheduling/EditShiftModal.tsx",
-          "frontend/src/pages/EmployeeOfMonthPage.tsx",
-          "frontend/src/pages/HolidayStatisticsPage.tsx",
-          "frontend/src/pages/PayrollExportPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/components/profile/ManagerNotesTab.tsx"
-        ]
+        "summary": "Add backend Motoko data structures and methods for stock requests. Each stock request record must store: a unique ID, item name, experience/building, quantity, comment, status (one of: #requested, #ordered, #delivered, #archived), creation timestamp, delivered timestamp (optional), and submitter name. Expose update functions to create a request, move a request to a new status, and query requests by status. Implement a function to move all delivered requests older than 7 days to archived status, callable on page load or via a scheduled check.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Add a gamification badge system to the backend. Define a `Badge` type with fields: id (Text), name (Text), description (Text), category (Text — e.g. 'Attendance', 'Performance', 'Experience', 'Customer', 'Team'), iconKey (Text — a key referencing a frontend icon/emoji), and createdAt (Int). Define a `StaffBadge` type representing an assignment with fields: id (Text), employeeId (Text), badgeId (Text), assignedBy (Text — manager's employeeId), assignedAt (Int), and note (opt Text). Store badges in a stable `HashMap<Text, Badge>` and staff badge assignments in a stable `HashMap<Text, StaffBadge>`. Seed a set of initial badges appropriate for an Escape Room Company (see REQ-4 for the badge list). Expose backend methods: `getBadges() → async [Badge]`, `addBadge(badge: Badge) → async Result`, `getStaffBadges(employeeId: Text) → async [StaffBadge]`, `assignBadgeToStaff(assignment: StaffBadge) → async Result` (manager/admin only), `removeBadgeFromStaff(assignmentId: Text) → async Result` (manager/admin only).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Add React Query hooks in frontend/src/hooks/useQueries.ts for stock requests: useGetStockRequestsByStatus, useCreateStockRequest, useUpdateStockRequestStatus, useArchiveDeliveredRequests, and useGetArchivedStockRequests.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts"
+        ]
       },
       {
         "id": "REQ-4",
-        "summary": "Seed the following themed badges appropriate for The Panic Room (Escape Rooms, birthday parties, axe throwing, laser tag, TV Game Show Experiences). Each badge should have a name, short description, category, and an emoji iconKey. Include at minimum: **Attendance & Reliability** — 'Perfect Attendance' (zero absences in a period), 'Early Bird' (consistently early to shifts), 'Reliable Hero' (never missed a shift); **Performance & Reviews** — 'Five Star Review' (received an outstanding customer review), 'Crowd Favourite' (multiple positive feedback submissions), 'Top Performer' (excellent appraisal score); **Experience-Specific** — 'Escape Master' (specialist in escape room experiences), 'Party Starter' (exceptional birthday party host), 'Axe Legend' (top-rated axe throwing guide), 'Laser Commander' (laser tag expert), 'Game Show Star' (TV Game Show experience specialist); **Team & Culture** — 'Team Player' (recognised by peers for collaboration), 'Mentorship Badge' (helped train a new team member), 'Going the Extra Mile' (above-and-beyond effort recognised by a manager); **Milestones** — '1 Year Anniversary', '3 Year Anniversary', '5 Year Anniversary'.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Implement the kanban dashboard on the Stock Requests page with three columns: Requested, Ordered, and Delivered. Each stock request card must display the item name, experience/building, quantity, and comment. Cards must support both drag-and-drop and a manual status-change button/menu to move them between columns. On page load, trigger the archiveDeliveredRequests backend function to automatically move any delivered items older than 7 days to the archive.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/StockRequestsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/StockRequestsPage.tsx"
+        ]
       },
       {
         "id": "REQ-5",
-        "summary": "Add a 'Badges' tab to the Employee Profile page (`EmployeeProfilePage.tsx`). This tab should display all badges currently assigned to the employee as visual badge cards — each showing the badge emoji, name, description, category colour chip, date assigned, assigning manager's name, and optional note. When the viewer is a manager or admin, show an 'Assign Badge' button that opens a modal (`AssignBadgeModal`) allowing them to select a badge from the full badge list (grouped by category), optionally add a note, and confirm the assignment. Managers/admins should also be able to remove an assigned badge via a remove button on each badge card. Use the new React Query hooks for `getStaffBadges` and `assignBadgeToStaff` and `removeBadgeFromStaff`. Style badge cards using the red/white/black theme with category-coloured accents.",
+        "summary": "Create a Stock Request Archive page (frontend/src/pages/StockRequestArchivePage.tsx) that displays all archived stock requests in a table or card list, showing item name, experience/building, quantity, comment, date submitted, and date delivered. Add a clearly visible link from the Stock Requests page to this archive page.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/profile/BadgesTab.tsx",
-          "frontend/src/components/profile/AssignBadgeModal.tsx",
-          "frontend/src/pages/EmployeeProfilePage.tsx"
+          "frontend/src/pages/StockRequestArchivePage.tsx",
+          "frontend/src/pages/StockRequestsPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/profile/BadgesTab.tsx",
-          "frontend/src/components/profile/AssignBadgeModal.tsx",
-          "frontend/src/pages/EmployeeProfilePage.tsx"
+          "frontend/src/pages/StockRequestArchivePage.tsx",
+          "frontend/src/pages/StockRequestsPage.tsx"
         ]
       },
       {
         "id": "REQ-6",
-        "summary": "Add React Query hooks for the new badge endpoints in `useQueries.ts`: `useGetBadges()` (fetches all badge definitions), `useGetStaffBadges(employeeId)` (fetches badge assignments for a specific employee), `useAssignBadgeToStaff()` (mutation), and `useRemoveBadgeFromStaff()` (mutation). Invalidate the staff badges query on successful assign or remove.",
+        "summary": "Add Stock Requests and Stock Request Archive as navigable routes in the app router (frontend/src/App.tsx) and include a Stock Requests entry in the sidebar navigation (frontend/src/components/layout/Sidebar.tsx) under an appropriate group.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/Sidebar.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/Sidebar.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
@@ -117,19 +87,13 @@
     "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/auth/ProfileSetupModal.tsx",
-    "frontend/src/components/layout/Header.tsx",
-    "frontend/src/components/layout/MainLayout.tsx",
     "frontend/src/components/layout/Sidebar.tsx",
-    "frontend/src/components/profile/AssignBadgeModal.tsx",
-    "frontend/src/components/profile/BadgesTab.tsx",
     "frontend/src/components/profile/ManagerNotesTab.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/index.css",
-    "frontend/src/pages/EmployeeProfilePage.tsx",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/StockRequestArchivePage.tsx",
+    "frontend/src/pages/StockRequestsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

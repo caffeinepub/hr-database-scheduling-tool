@@ -19,6 +19,7 @@ import EmployeeProfilePage from './pages/EmployeeProfilePage';
 import SchedulingPage from './pages/SchedulingPage';
 import EmployeePortalPage from './pages/EmployeePortalPage';
 import StockRequestsPage from './pages/StockRequestsPage';
+import StockRequestArchivePage from './pages/StockRequestArchivePage';
 import InventoryManagementPage from './pages/InventoryManagementPage';
 import EmployeeOfMonthPage from './pages/EmployeeOfMonthPage';
 import AppraisalsDashboardPage from './pages/AppraisalsDashboardPage';
@@ -28,6 +29,7 @@ import PayrollExportPage from './pages/PayrollExportPage';
 import AdminApprovalQueuePage from './pages/AdminApprovalQueuePage';
 import DocumentsPage from './pages/DocumentsPage';
 import ResourcesPage from './pages/ResourcesPage';
+import ToDoPage from './pages/ToDoPage';
 
 export type Page =
   | 'dashboard'
@@ -36,6 +38,7 @@ export type Page =
   | 'scheduling'
   | 'portal'
   | 'stock-requests'
+  | 'stock-requests-archive'
   | 'inventory'
   | 'eom'
   | 'appraisals'
@@ -44,7 +47,8 @@ export type Page =
   | 'payroll-export'
   | 'approval-queue'
   | 'documents'
-  | 'resources';
+  | 'resources'
+  | 'todos';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -117,6 +121,9 @@ function AppContent() {
     if (employeeId !== undefined) setSelectedEmployeeId(employeeId);
   };
 
+  // Wrapper for pages that only accept (page: string) => void
+  const navigateString = (page: string) => navigate(page as Page);
+
   if (!isAuthenticated && !isLoggingIn) {
     return (
       <>
@@ -172,7 +179,7 @@ function AppContent() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <DashboardPage navigate={navigate} />;
+        return <DashboardPage isAdmin={!!isAdmin} onNavigate={navigate} />;
       case 'employees':
         return <EmployeesPage navigate={navigate} />;
       case 'employee-profile':
@@ -189,7 +196,9 @@ function AppContent() {
       case 'portal':
         return <EmployeePortalPage navigate={navigate} />;
       case 'stock-requests':
-        return <StockRequestsPage />;
+        return <StockRequestsPage onNavigate={navigateString} />;
+      case 'stock-requests-archive':
+        return <StockRequestArchivePage onNavigate={navigateString} />;
       case 'inventory':
         return <InventoryManagementPage />;
       case 'eom':
@@ -208,8 +217,10 @@ function AppContent() {
         return <DocumentsPage />;
       case 'resources':
         return <ResourcesPage />;
+      case 'todos':
+        return <ToDoPage isAdmin={!!isAdmin} />;
       default:
-        return <DashboardPage navigate={navigate} />;
+        return <DashboardPage isAdmin={!!isAdmin} onNavigate={navigate} />;
     }
   };
 

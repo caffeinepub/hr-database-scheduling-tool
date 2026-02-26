@@ -1,21 +1,183 @@
 import React from "react";
-import { useGetAllEmployees, useGetAllShifts, useGetAllHolidayRequests, useIsCallerAdmin, useGetCallerUserProfile } from "../hooks/useQueries";
-import { Users, Calendar, Clock, Star, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  Clock,
+  TrendingUp,
+  AlertCircle,
+  CheckSquare,
+  Check,
+  RefreshCw,
+  User,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import {
+  useGetAllEmployees,
+  useGetAllShifts,
+  useGetAllHolidayRequests,
+  useIsCallerAdmin,
+  useGetCallerUserProfile,
+  useGetTasksForToday,
+  useMarkTaskComplete,
+} from "../hooks/useQueries";
 import { formatDate, getWeekDates, nanosecondsToDate, isSameDay } from "../lib/utils";
-import { HolidayRequestStatus } from "../backend";
+import { HolidayRequestStatus, DayOfWeek, Employee, ToDoTask } from "../backend";
 
-type Page = "dashboard" | "employees" | "employee-profile" | "scheduling" | "portal" | "stock-requests" | "inventory" | "eom" | "appraisals" | "training-summary" | "holiday-stats" | "payroll-export" | "approval-queue" | "documents" | "resources";
+export type Page =
+  | 'dashboard'
+  | 'employees'
+  | 'employee-profile'
+  | 'scheduling'
+  | 'portal'
+  | 'stock-requests'
+  | 'inventory'
+  | 'eom'
+  | 'appraisals'
+  | 'training-summary'
+  | 'holiday-stats'
+  | 'payroll-export'
+  | 'approval-queue'
+  | 'documents'
+  | 'resources'
+  | 'todos';
 
 interface DashboardPageProps {
-  navigate: (page: Page) => void;
+  isAdmin: boolean;
+  onNavigate: (page: Page) => void;
 }
 
-export default function DashboardPage({ navigate }: DashboardPageProps) {
-  const { data: employees } = useGetAllEmployees();
+function getTodayDayOfWeek(): DayOfWeek {
+  const day = new Date().getDay();
+  const map: Record<number, DayOfWeek> = {
+    0: DayOfWeek.sunday,
+    1: DayOfWeek.monday,
+    2: DayOfWeek.tuesday,
+    3: DayOfWeek.wednesday,
+    4: DayOfWeek.thursday,
+    5: DayOfWeek.friday,
+    6: DayOfWeek.saturday,
+  };
+  return map[day];
+}
+
+function formatCompletionTime(ts: bigint): string {
+  const ms = Number(ts) / 1_000_000;
+  return new Date(ms).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+interface TodayTaskItemProps {
+  task: ToDoTask;
+  employees: Employee[];
+  onMarkComplete: (id: string) => void;
+  isCompleting: boolean;
+  completingId: string | null;
+}
+
+function TodayTaskItem({
+  task,
+  employees,
+  onMarkComplete,
+  isCompleting,
+  completingId,
+}: TodayTaskItemProps) {
+  const isThisCompleting = isCompleting && completingId === task.id;
+  const isCompleted = !!task.completedBy;
+
+  const assigneeLabel =
+    task.assignee.__kind__ === "everyone"
+      ? "Everyone"
+      : (() => {
+          const emp = employees.find(
+            (e) =>
+              e.id ===
+              (task.assignee as { __kind__: "employee"; employee: string }).employee
+          );
+          return emp ? emp.fullName : "Unknown";
+        })();
+
+  return (
+    <div
+      className={`flex items-center justify-between gap-3 py-3 px-4 rounded-lg border transition-all ${
+        isCompleted
+          ? "bg-green-50 border-green-200 opacity-80"
+          : "bg-white border-gray-100 hover:border-primary/20"
+      }`}
+    >
+      <div className="flex-1 min-w-0">
+        <p
+          className={`text-sm font-medium ${
+            isCompleted ? "line-through text-muted-foreground" : "text-foreground"
+          }`}
+        >
+          {task.title}
+        </p>
+        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Clock size={10} />
+            {Number(task.durationMins)} mins
+          </span>
+          <span className="flex items-center gap-1">
+            <User size={10} />
+            {assigneeLabel}
+          </span>
+          {isCompleted && task.completedTimestamp && (
+            <span className="flex items-center gap-1 text-green-600">
+              <Check size={10} />
+              Done at {formatCompletionTime(task.completedTimestamp)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {!isCompleted && (
+        <Button
+          size="sm"
+          onClick={() => onMarkComplete(task.id)}
+          disabled={isThisCompleting}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-7 px-2 flex-shrink-0"
+        >
+          {isThisCompleting ? (
+            <RefreshCw size={11} className="animate-spin" />
+          ) : (
+            <span className="flex items-center gap-1">
+              <Check size={11} /> Done
+            </span>
+          )}
+        </Button>
+      )}
+      {isCompleted && (
+        <Badge className="bg-green-100 text-green-700 border-green-200 text-xs flex-shrink-0">
+          <Check size={10} className="mr-1" /> Complete
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+export default function DashboardPage({ isAdmin, onNavigate }: DashboardPageProps) {
+  const { data: employees = [] } = useGetAllEmployees();
   const { data: shifts } = useGetAllShifts();
   const { data: holidayRequests } = useGetAllHolidayRequests();
-  const { data: isAdmin } = useIsCallerAdmin();
   const { data: userProfile } = useGetCallerUserProfile();
+
+  const todayDow = getTodayDayOfWeek();
+  const { data: todayTasks = [], isLoading: tasksLoading } = useGetTasksForToday(todayDow);
+  const markComplete = useMarkTaskComplete();
+  const [completingId, setCompletingId] = React.useState<string | null>(null);
+
+  const handleMarkComplete = async (taskId: string) => {
+    setCompletingId(taskId);
+    try {
+      await markComplete.mutateAsync(taskId);
+    } finally {
+      setCompletingId(null);
+    }
+  };
 
   const today = new Date();
   const weekDates = getWeekDates(today);
@@ -29,26 +191,29 @@ export default function DashboardPage({ navigate }: DashboardPageProps) {
     (r) => r.status === HolidayRequestStatus.pending
   ) || [];
 
-  const activeEmployees = employees?.filter((e) => e.isActive) || [];
+  const activeEmployees = employees.filter((e) => e.isActive);
+
+  const pendingTodayTasks = todayTasks.filter((t) => !t.completedBy);
+  const completedTodayTasks = todayTasks.filter((t) => !!t.completedBy);
 
   const stats = [
     {
       label: "Active Staff",
       value: activeEmployees.length,
       icon: <Users size={20} className="text-primary" />,
-      onClick: () => navigate("employees"),
+      onClick: () => onNavigate("employees"),
     },
     {
       label: "Shifts Today",
       value: todayShifts.length,
       icon: <Calendar size={20} className="text-primary" />,
-      onClick: () => navigate("scheduling"),
+      onClick: () => onNavigate("scheduling"),
     },
     {
       label: "Pending Holidays",
       value: pendingHolidays.length,
       icon: <Clock size={20} className="text-primary" />,
-      onClick: () => navigate("holiday-stats"),
+      onClick: () => onNavigate("holiday-stats"),
     },
     {
       label: "This Week's Shifts",
@@ -57,7 +222,7 @@ export default function DashboardPage({ navigate }: DashboardPageProps) {
         return d >= weekDates[0] && d <= weekDates[6];
       }).length || 0,
       icon: <TrendingUp size={20} className="text-primary" />,
-      onClick: () => navigate("scheduling"),
+      onClick: () => onNavigate("scheduling"),
     },
   ];
 
@@ -92,6 +257,58 @@ export default function DashboardPage({ navigate }: DashboardPageProps) {
         ))}
       </div>
 
+      {/* Today's To Do */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <CheckSquare size={16} className="text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground text-sm">Today's To Do</h3>
+              <p className="text-xs text-muted-foreground">
+                {pendingTodayTasks.length} pending · {completedTodayTasks.length} done
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate("todos")}
+            className="text-primary hover:text-primary text-xs"
+          >
+            View All →
+          </Button>
+        </div>
+        <div className="p-4">
+          {tasksLoading ? (
+            <div className="space-y-2">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : todayTasks.length === 0 ? (
+            <div className="text-center py-6">
+              <CheckSquare size={28} className="text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-muted-foreground text-sm">No tasks scheduled for today</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {todayTasks.map((task) => (
+                <TodayTaskItem
+                  key={task.id}
+                  task={task}
+                  employees={employees}
+                  onMarkComplete={handleMarkComplete}
+                  isCompleting={markComplete.isPending}
+                  completingId={completingId}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Pending Holiday Requests */}
@@ -118,7 +335,7 @@ export default function DashboardPage({ navigate }: DashboardPageProps) {
                 ))}
                 {pendingHolidays.length > 5 && (
                   <button
-                    onClick={() => navigate("holiday-stats")}
+                    onClick={() => onNavigate("holiday-stats")}
                     className="text-sm text-primary hover:underline"
                   >
                     View all {pendingHolidays.length} requests →
@@ -165,7 +382,7 @@ export default function DashboardPage({ navigate }: DashboardPageProps) {
         >
           caffeine.ai
         </a>{" "}
-        · © {new Date().getFullYear()} Magnum HR
+        · © {new Date().getFullYear()} ESC-HR
       </footer>
     </div>
   );
