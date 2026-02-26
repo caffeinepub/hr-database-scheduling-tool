@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-a-stock-requests-page-frontend-src-pages-stockrequestspage-tsx-with-a-submission-form-that-collects-item-name-text-input-experience-or-building-dropdown-selector-quantity-number-input-and-a-comment-textarea-the-dropdown-must-include-exactly-these-options-milton-general-the-happy-institute-the-dollhouse-wizard-of-oz-st-george-s-general-break-the-bank-marvellous-magic-school-riddled-hell-house-the-don-s-revenge-whodunit-battle-masters-fec-general-time-raiders-laser-quest-retro-arcade-7-sins-csi-disco-csi-mafia-karaoke-lounge-karaoke-disco-like-tv-game-show-splatter-room",
-      "featureTitle": "Create a Stock Requests page (frontend/src/pages/StockRequestsPage.tsx) with a submission form that collects: item name (text input), experience or building (dropdown selector), quantity (number input), and a comment (textarea). The dropdown must include exactly these options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
+      "featureId": "feature-ensure-all-modal-dialogs-dropdown-menus-popovers-tooltips-and-any-other-overlay-popup-components-have-a-fully-opaque-non-transparent-background-so-their-content-is-always-legible-against-any-underlying-content",
+      "featureTitle": "Ensure all modal dialogs, dropdown menus, popovers, tooltips, and any other overlay/popup components have a fully opaque (non-transparent) background so their content is always legible against any underlying content.",
       "files": [
-        "frontend/src/pages/StockRequestsPage.tsx"
+        "frontend/src/index.css"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -19,92 +19,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-react-query-hooks-in-frontend-src-hooks-usequeries-ts-for-stock-requests-usegetstockrequestsbystatus-usecreatestockrequest-useupdatestockrequeststatus-usearchivedeliveredrequests-and-usegetarchivedstockrequests",
-      "featureTitle": "Add React Query hooks in frontend/src/hooks/useQueries.ts for stock requests: useGetStockRequestsByStatus, useCreateStockRequest, useUpdateStockRequestStatus, useArchiveDeliveredRequests, and useGetArchivedStockRequests.",
-      "files": [
-        "frontend/src/hooks/useQueries.ts"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "user-approval@3.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-the-kanban-dashboard-on-the-stock-requests-page-with-three-columns-requested-ordered-and-delivered-each-stock-request-card-must-display-the-item-name-experience-building-quantity-and-comment-cards-must-support-both-drag-and-drop-and-a-manual-status-change-button-menu-to-move-them-between-columns-on-page-load-trigger-the-archivedeliveredrequests-backend-function-to-automatically-move-any-delivered-items-older-than-7-days-to-the-archive",
-      "featureTitle": "Implement the kanban dashboard on the Stock Requests page with three columns: Requested, Ordered, and Delivered. Each stock request card must display the item name, experience/building, quantity, and comment. Cards must support both drag-and-drop and a manual status-change button/menu to move them between columns. On page load, trigger the archiveDeliveredRequests backend function to automatically move any delivered items older than 7 days to the archive.",
-      "files": [
-        "frontend/src/pages/StockRequestsPage.tsx"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "user-approval@3.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-a-stock-request-archive-page-frontend-src-pages-stockrequestarchivepage-tsx-that-displays-all-archived-stock-requests-in-a-table-or-card-list-showing-item-name-experience-building-quantity-comment-date-submitted-and-date-delivered-add-a-clearly-visible-link-from-the-stock-requests-page-to-this-archive-page",
-      "featureTitle": "Create a Stock Request Archive page (frontend/src/pages/StockRequestArchivePage.tsx) that displays all archived stock requests in a table or card list, showing item name, experience/building, quantity, comment, date submitted, and date delivered. Add a clearly visible link from the Stock Requests page to this archive page.",
-      "files": [
-        "frontend/src/pages/StockRequestArchivePage.tsx",
-        "frontend/src/pages/StockRequestsPage.tsx"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "user-approval@3.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-stock-requests-and-stock-request-archive-as-navigable-routes-in-the-app-router-frontend-src-app-tsx-and-include-a-stock-requests-entry-in-the-sidebar-navigation-frontend-src-components-layout-sidebar-tsx-under-an-appropriate-group",
-      "featureTitle": "Add Stock Requests and Stock Request Archive as navigable routes in the app router (frontend/src/App.tsx) and include a Stock Requests entry in the sidebar navigation (frontend/src/components/layout/Sidebar.tsx) under an appropriate group.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/layout/Sidebar.tsx"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "user-approval@3.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
       ],
       "confidence": "high"
     }

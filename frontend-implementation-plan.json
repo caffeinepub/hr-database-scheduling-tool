@@ -1,98 +1,23 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Stock Request System with Kanban Dashboard and Auto-Archive",
+  "title": "Fix popup/popout background transparency",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Create Stock Requests submission form page with experience/building dropdown",
+      "summary": "Ensure all modal dialogs, dropdown menus, popovers, tooltips, and overlay components have fully opaque backgrounds for legibility",
       "acceptanceCriteria": [
-        "Form contains fields: item name, experience/building dropdown, quantity, comment",
-        "Dropdown lists all 23 specified locations exactly as written",
-        "Submitting the form creates a new stock request in the 'Requested' column",
-        "Form resets after successful submission"
+        "All modal dialogs (e.g. AddEmployeeModal, EditEmployeeModal, AddShiftModal, ShiftDetailModal, AddTrainingModal, EditTrainingModal, AssignBadgeModal, AddDocumentModal, EditDocumentModal, etc.) render with a fully opaque background and are readable over any page content.",
+        "All dropdown menus, popovers, and select option lists render with a fully opaque background.",
+        "No popup or overlay element has a semi-transparent or transparent background that allows underlying page content to bleed through and obscure the popup's own content.",
+        "The fix is applied globally (e.g. via CSS variables or Tailwind utility classes in index.css or the relevant component styles) so all current and future overlays benefit.",
+        "Overlays still display their backdrop/scrim (dimming the page behind them) correctly — only the popup panel itself must be opaque."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/StockRequestsPage.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add a submission form section above the kanban board with fields for item name (text input), experience/building (dropdown with exact 23 options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room), quantity (number input), and comment (textarea). Wire the form submission to call the useCreateStockRequest mutation with the current user's name from their profile, then reset the form on success."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add React Query hooks for stock request operations",
-      "acceptanceCriteria": [
-        "All five hooks are defined and exported from useQueries.ts",
-        "Mutation hooks invalidate relevant stock request queries on success"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add five new hooks: useGetStockRequestsByStatus (query hook accepting StockRequestStatus enum param, calls actor.getStockRequestsByStatus), useCreateStockRequest (mutation hook calling actor.createStockRequest with itemName, experience, quantity, notes, submitterName params, invalidates stock request queries on success), useUpdateStockRequestStatus (mutation hook calling actor.updateStockRequestStatus with id and newStatus params, invalidates stock request queries on success), useArchiveDeliveredRequests (mutation hook calling actor.archiveOldDeliveredRequests, invalidates stock request queries on success), and useGetArchivedStockRequests (query hook calling actor.getStockRequestsByStatus with StockRequestStatus.archived)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Implement three-column kanban dashboard with drag-and-drop and auto-archive trigger",
-      "acceptanceCriteria": [
-        "Three visible columns: Requested, Ordered, Delivered",
-        "Cards can be dragged between columns",
-        "Cards have a button/menu to change status without dragging",
-        "Moving a card persists the status change to the backend",
-        "On page load, archiveDeliveredRequests is called to sweep old delivered items"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/StockRequestsPage.tsx",
-          "operation": "modify",
-          "description": "Implement a three-column kanban board layout below the submission form. Each column displays stock requests fetched via useGetStockRequestsByStatus for statuses 'requested', 'ordered', and 'delivered'. Render each stock request as a card showing item name, experience/building, quantity, and comment. Implement drag-and-drop functionality (consider react-beautiful-dnd or similar library) to move cards between columns, calling useUpdateStockRequestStatus mutation on drop. Add a status-change dropdown or button menu on each card as an alternative to dragging. In a useEffect hook that runs on component mount, call the archiveDeliveredRequests mutation to automatically move delivered items older than 7 days to archived status."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Create Stock Request Archive page displaying archived requests",
-      "acceptanceCriteria": [
-        "Archive page lists all requests with status #archived",
-        "Each entry shows item name, experience/building, quantity, comment, submitted date, delivered date",
-        "A link from the Stock Requests page navigates to the archive page",
-        "Archive page is accessible via the sidebar or as a sub-link"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/StockRequestArchivePage.tsx",
-          "operation": "create",
-          "description": "Create a new page component that fetches all archived stock requests using the useGetArchivedStockRequests hook. Display them in a table or card list layout showing: item name, experience/building, quantity, comment, date submitted (formatted from createdTimestamp), and date delivered (formatted from deliveredTimestamp). Use the formatDate utility from lib/utils.ts for timestamp formatting. Include a back button or breadcrumb navigation to return to the Stock Requests page."
-        },
-        {
-          "path": "frontend/src/pages/StockRequestsPage.tsx",
-          "operation": "modify",
-          "description": "Add a prominent 'View Archive' button or link above or below the kanban board that navigates to the Stock Request Archive page using React Router's useNavigate hook."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Wire Stock Requests and Archive routes into app navigation",
-      "acceptanceCriteria": [
-        "Navigating to the stock requests route renders StockRequestsPage",
-        "Navigating to the archive route renders StockRequestArchivePage",
-        "Stock Requests appears in the sidebar and is clickable"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Import StockRequestsPage and StockRequestArchivePage components. Add two new Route entries in the router configuration: one for '/stock-requests' rendering StockRequestsPage, and one for '/stock-requests/archive' rendering StockRequestArchivePage. Ensure both routes are wrapped in the MainLayout with appropriate page titles."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a new navigation item for 'Stock Requests' in the Finance or Admin navigation group (whichever is more appropriate based on existing structure). The item should link to '/stock-requests' and use an appropriate icon from lucide-react (e.g., Package or Warehouse icon). Ensure the item is visible to all authenticated users, not just admins."
+          "description": "Add global CSS rules to ensure all shadcn/ui Dialog, Popover, DropdownMenu, Select, and Tooltip components have fully opaque backgrounds. Target the relevant shadcn component classes (e.g., .DialogContent, .PopoverContent, .DropdownMenuContent, .SelectContent, .TooltipContent) and set explicit background-color values using the existing CSS custom properties (--background, --popover, --card) to ensure opacity is 1.0. Preserve the existing backdrop/scrim opacity for dimming effects. Do not alter the red/white/black escape-room color palette."
         }
       ]
     }

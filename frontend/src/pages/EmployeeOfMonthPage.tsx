@@ -1,279 +1,369 @@
-import { useState } from 'react';
-import {
-  useGetWinnerByMonth,
-  useGetNominationsByMonth,
-  useSubmitNomination,
-  useSetMonthWinner,
-  useMarkWinnerBonus,
-  useGetAllEmployees,
-  useGetCallerUserProfile,
-  useIsCallerAdmin,
-} from '../hooks/useQueries';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Star, Trophy, Award, Loader2, CheckCircle } from 'lucide-react';
-import { generateId, dateToNanoseconds, getCurrentMonth } from '../lib/utils';
-import type { Nomination } from '../backend';
+import React, { useState } from 'react';
+import { useIsCallerAdmin } from '../hooks/useQueries';
+import { useGetAllEmployees } from '../hooks/useQueries';
+import { useGetAllEmployeeOfTheMonthNominations } from '../hooks/useQueries';
+import { useSubmitEmployeeOfTheMonthNomination } from '../hooks/useQueries';
+import { useGetWinnerByMonth, useSetMonthWinner, useMarkWinnerBonus } from '../hooks/useQueries';
+import { useGetCallerUserProfile } from '../hooks/useQueries';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
+import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
+import { Trophy, Star, Users, Award, Loader2, MessageSquare, User } from 'lucide-react';
+import type { Employee, EmployeeOfTheMonthNomination } from '../backend';
+
+const CURRENT_MONTH = new Date().toISOString().slice(0, 7);
+
+function formatMonth(month: string): string {
+  const [year, m] = month.split('-');
+  const date = new Date(parseInt(year), parseInt(m) - 1, 1);
+  return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+}
 
 export default function EmployeeOfMonthPage() {
-  const currentMonth = getCurrentMonth();
-  const [nomineeId, setNomineeId] = useState('');
-  const [reason, setReason] = useState('');
-  const [selectedWinnerId, setSelectedWinnerId] = useState('');
-
-  const { data: userProfile } = useGetCallerUserProfile();
   const { data: isAdmin } = useIsCallerAdmin();
-  const { data: employees } = useGetAllEmployees();
-  const { data: winner, isLoading: winnerLoading } = useGetWinnerByMonth(currentMonth);
-  const { data: nominations, isLoading: nominationsLoading } = useGetNominationsByMonth(currentMonth);
+  const { data: employees = [] } = useGetAllEmployees();
+  const { data: nominations = [], isLoading: nominationsLoading } = useGetAllEmployeeOfTheMonthNominations();
+  const { data: winner, isLoading: winnerLoading } = useGetWinnerByMonth(CURRENT_MONTH);
+  const { data: userProfile } = useGetCallerUserProfile();
 
-  const submitNomination = useSubmitNomination();
   const setMonthWinner = useSetMonthWinner();
   const markBonus = useMarkWinnerBonus();
+  const submitNomination = useSubmitEmployeeOfTheMonthNomination();
 
-  const myEmployeeId = userProfile?.employeeId ?? '';
+  const [selectedMonth, setSelectedMonth] = useState(CURRENT_MONTH);
+  const [nomineeId, setNomineeId] = useState('');
+  const [comment, setComment] = useState('');
+  const [winnerEmployeeId, setWinnerEmployeeId] = useState('');
 
-  // Check if current user already nominated this month
-  const alreadyNominated = (nominations || []).some(
-    (n) => n.nominatorEmployeeId === myEmployeeId
+  const activeEmployees = employees.filter((e) => e.isActive);
+
+  const currentMonthNominations = nominations.filter(
+    (n) => {
+      // Group by month using timestamp
+      const nomMonth = new Date(Number(n.timestamp) / 1_000_000).toISOString().slice(0, 7);
+      return nomMonth === selectedMonth;
+    }
   );
 
-  // Tally nominations
-  const tally = (nominations || []).reduce((acc, n) => {
-    acc[n.nomineeEmployeeId] = (acc[n.nomineeEmployeeId] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const getEmployeeName = (id: string) => {
+    const emp = employees.find((e) => e.id === id);
+    return emp ? emp.fullName : id;
+  };
 
-  const tallyEntries = Object.entries(tally).sort((a, b) => b[1] - a[1]);
-
-  const getEmployeeName = (id: string) =>
-    employees?.find((e) => e.id === id)?.fullName ?? id;
-
-  const winnerEmployee = winner ? employees?.find((e) => e.id === winner.employeeId) : null;
-
-  const handleSubmitNomination = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!myEmployeeId) {
-      toast.error('Your account is not linked to an employee record.');
+  const handleSubmitNomination = async () => {
+    if (!nomineeId) {
+      toast.error('Please select a nominee');
       return;
     }
-    if (nomineeId === myEmployeeId) {
-      toast.error('You cannot nominate yourself.');
+    if (!comment.trim()) {
+      toast.error('Please add a comment for your nomination');
       return;
     }
-
-    const nomination: Nomination = {
-      id: generateId(),
-      nominatorEmployeeId: myEmployeeId,
-      nomineeEmployeeId: nomineeId,
-      reason,
-      month: currentMonth,
-      submittedAt: dateToNanoseconds(new Date()),
-    };
-
     try {
-      await submitNomination.mutateAsync(nomination);
-      toast.success('Nomination submitted!');
+      await submitNomination.mutateAsync({
+        nomineeEmployeeId: nomineeId,
+        comment: comment.trim(),
+        submitterName: userProfile?.name ?? null,
+      });
+      toast.success('Nomination submitted successfully!');
       setNomineeId('');
-      setReason('');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to submit nomination');
+      setComment('');
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to submit nomination');
     }
   };
 
   const handleSetWinner = async () => {
-    if (!selectedWinnerId) return;
+    if (!winnerEmployeeId) {
+      toast.error('Please select a winner');
+      return;
+    }
     try {
-      await setMonthWinner.mutateAsync({ month: currentMonth, employeeId: selectedWinnerId });
-      toast.success('Winner declared!');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to set winner');
+      await setMonthWinner.mutateAsync({ month: CURRENT_MONTH, employeeId: winnerEmployeeId });
+      toast.success('Winner set successfully!');
+      setWinnerEmployeeId('');
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to set winner');
     }
   };
 
   const handleMarkBonus = async () => {
     try {
-      await markBonus.mutateAsync(currentMonth);
+      await markBonus.mutateAsync(CURRENT_MONTH);
       toast.success('Bonus marked as received!');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to mark bonus');
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to mark bonus');
     }
   };
 
-  const monthLabel = new Date(currentMonth + '-01').toLocaleDateString('en-GB', {
-    month: 'long',
-    year: 'numeric',
+  // Group nominations by nominee for summary
+  const nominationsByNominee = currentMonthNominations.reduce<Record<string, EmployeeOfTheMonthNomination[]>>(
+    (acc, nom) => {
+      if (!acc[nom.nomineeEmployeeId]) acc[nom.nomineeEmployeeId] = [];
+      acc[nom.nomineeEmployeeId].push(nom);
+      return acc;
+    },
+    {}
+  );
+
+  const winnerEmployee = winner ? employees.find((e) => e.id === winner.employeeId) : null;
+
+  // Generate month options (last 12 months)
+  const monthOptions = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    return d.toISOString().slice(0, 7);
   });
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Employee of the Month</h1>
-        <p className="text-muted-foreground">{monthLabel} — Winner receives a £50 bonus!</p>
+    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Trophy className="w-8 h-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-display text-foreground">Employee of the Month</h1>
+          <p className="text-muted-foreground text-sm">Recognise outstanding team members</p>
+        </div>
       </div>
 
-      {/* Winner Display */}
-      <Card className="border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-yellow-600" />
-            <CardTitle className="text-yellow-800">This Month's Winner</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {winnerLoading ? (
-            <Skeleton className="h-16 w-full" />
-          ) : winnerEmployee ? (
+      {/* Current Winner Banner */}
+      {!winnerLoading && winnerEmployee && (
+        <Card className="border-2 border-primary bg-primary/5">
+          <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-yellow-200 flex items-center justify-center text-2xl font-bold text-yellow-700">
-                {winnerEmployee.fullName.charAt(0)}
+              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-primary-foreground" />
               </div>
-              <div>
-                <p className="text-xl font-bold text-yellow-900">{winnerEmployee.fullName}</p>
-                <p className="text-yellow-700 text-sm">{winnerEmployee.jobTitle} — {winnerEmployee.department}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-200 text-yellow-800 border border-yellow-300">
-                    <Award className="w-3 h-3" />
-                    £50 Bonus
-                  </span>
-                  {winner?.hasReceivedBonus && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                      <CheckCircle className="w-3 h-3" />
-                      Bonus Received
-                    </span>
-                  )}
-                </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">
+                  {formatMonth(CURRENT_MONTH)} Winner
+                </p>
+                <h2 className="text-2xl font-display text-foreground">{winnerEmployee.fullName}</h2>
+                <p className="text-muted-foreground text-sm">{winnerEmployee.jobTitle}</p>
               </div>
-              {isAdmin && !winner?.hasReceivedBonus && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="ml-auto"
-                  onClick={handleMarkBonus}
-                  disabled={markBonus.isPending}
-                >
-                  {markBonus.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Mark Bonus Paid'}
-                </Button>
-              )}
+              <div className="flex flex-col items-end gap-2">
+                {winner?.hasReceivedBonus ? (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    ✓ Bonus Received
+                  </Badge>
+                ) : (
+                  isAdmin && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleMarkBonus}
+                      disabled={markBonus.isPending}
+                    >
+                      {markBonus.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                      ) : (
+                        <Award className="w-4 h-4 mr-1" />
+                      )}
+                      Mark Bonus Received
+                    </Button>
+                  )
+                )}
+              </div>
             </div>
-          ) : (
-            <p className="text-yellow-700 text-sm py-2">No winner declared yet for this month.</p>
-          )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Nomination Form - visible to all authenticated users */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-display">
+            <Star className="w-5 h-5 text-primary" />
+            Submit a Nomination
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="nominee-select">Nominate an Employee</Label>
+            <Select value={nomineeId} onValueChange={setNomineeId}>
+              <SelectTrigger id="nominee-select">
+                <SelectValue placeholder="Select an employee to nominate..." />
+              </SelectTrigger>
+              <SelectContent>
+                {activeEmployees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.fullName} — {emp.jobTitle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="nomination-comment">Why do they deserve it?</Label>
+            <Textarea
+              id="nomination-comment"
+              placeholder="Tell us why this person deserves Employee of the Month..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+          </div>
+
+          <Button
+            onClick={handleSubmitNomination}
+            disabled={submitNomination.isPending || !nomineeId || !comment.trim()}
+            className="w-full sm:w-auto"
+          >
+            {submitNomination.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Star className="w-4 h-4 mr-2" />
+                Submit Nomination
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Nomination Form */}
-      {!alreadyNominated && myEmployeeId ? (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg">Submit Your Nomination</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmitNomination} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nominate a Colleague</Label>
-                <Select value={nomineeId} onValueChange={setNomineeId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an employee..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(employees || [])
-                      .filter((e) => e.id !== myEmployeeId && e.isActive)
-                      .map((e) => (
-                        <SelectItem key={e.id} value={e.id}>
-                          {e.fullName} — {e.jobTitle}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Reason for Nomination</Label>
-                <Textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Why do you think this person deserves Employee of the Month?"
-                  rows={3}
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={submitNomination.isPending || !nomineeId}>
-                {submitNomination.isPending ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</>
-                ) : (
-                  <><Star className="w-4 h-4 mr-2" />Submit Nomination</>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      ) : alreadyNominated ? (
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="py-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <p className="text-green-800 text-sm font-medium">You have already submitted your nomination for this month.</p>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {/* Admin: Nomination Tallies & Set Winner */}
+      {/* Admin Section */}
       {isAdmin && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Nomination Tallies (Admin)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {nominationsLoading ? (
-              <Skeleton className="h-24 w-full" />
-            ) : tallyEntries.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No nominations yet this month.</p>
-            ) : (
-              <div className="space-y-2">
-                {tallyEntries.map(([empId, count]) => (
-                  <div key={empId} className="flex items-center justify-between p-2 bg-muted/40 rounded-lg">
-                    <span className="font-medium text-sm">{getEmployeeName(empId)}</span>
-                    <span className="text-sm font-bold text-primary">{count} vote{count !== 1 ? 's' : ''}</span>
-                  </div>
+        <>
+          {/* Month Selector */}
+          <div className="flex items-center gap-3">
+            <Label className="text-sm font-medium whitespace-nowrap">View nominations for:</Label>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {formatMonth(m)}
+                  </SelectItem>
                 ))}
-              </div>
-            )}
+              </SelectContent>
+            </Select>
+          </div>
 
-            {!winner && (
-              <div className="border-t border-border pt-4 space-y-3">
-                <Label>Declare Winner</Label>
-                <div className="flex gap-2">
-                  <Select value={selectedWinnerId} onValueChange={setSelectedWinnerId}>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select winner..." />
+          {/* Nominations Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 font-display">
+                <Users className="w-5 h-5 text-primary" />
+                Nominations — {formatMonth(selectedMonth)}
+                <Badge variant="outline" className="ml-2">
+                  {currentMonthNominations.length} total
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {nominationsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : Object.keys(nominationsByNominee).length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  No nominations for {formatMonth(selectedMonth)} yet.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(nominationsByNominee)
+                    .sort(([, a], [, b]) => b.length - a.length)
+                    .map(([empId, noms]) => (
+                      <div key={empId} className="border border-border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="w-4 h-4 text-primary" />
+                            </div>
+                            <span className="font-semibold text-foreground">
+                              {getEmployeeName(empId)}
+                            </span>
+                          </div>
+                          <Badge variant="default">
+                            {noms.length} nomination{noms.length !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+
+                        {/* Individual nomination comments with submitter info */}
+                        <div className="space-y-2 pl-10">
+                          {noms.map((nom) => (
+                            <div
+                              key={nom.id}
+                              className="bg-muted/50 rounded-md p-3 space-y-1"
+                            >
+                              <div className="flex items-start gap-2">
+                                <MessageSquare className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                                <p className="text-sm text-foreground">{nom.comment}</p>
+                              </div>
+                              {/* Admin sees submitter info */}
+                              <div className="flex items-center gap-1 pl-5">
+                                <span className="text-xs text-muted-foreground">
+                                  Submitted by:{' '}
+                                  <span className="font-medium text-foreground/70">
+                                    {nom.submitterName ?? 'Anonymous'}
+                                  </span>
+                                </span>
+                                <span className="text-xs text-muted-foreground mx-1">·</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(Number(nom.timestamp) / 1_000_000).toLocaleDateString('en-GB')}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Set Winner */}
+          {!winner && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-display">
+                  <Trophy className="w-5 h-5 text-primary" />
+                  Announce Winner for {formatMonth(CURRENT_MONTH)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Select Winner</Label>
+                  <Select value={winnerEmployeeId} onValueChange={setWinnerEmployeeId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose the winner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {(employees || []).filter((e) => e.isActive).map((e) => (
-                        <SelectItem key={e.id} value={e.id}>
-                          {e.fullName}
+                      {activeEmployees.map((emp) => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.fullName}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button
-                    onClick={handleSetWinner}
-                    disabled={!selectedWinnerId || setMonthWinner.isPending}
-                  >
-                    {setMonthWinner.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Declare'}
-                  </Button>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                <Button
+                  onClick={handleSetWinner}
+                  disabled={setMonthWinner.isPending || !winnerEmployeeId}
+                >
+                  {setMonthWinner.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Trophy className="w-4 h-4 mr-2" />
+                  )}
+                  Announce Winner
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );

@@ -1,132 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Stock Request System with Kanban Dashboard and Auto-Archive",
-  "projectName": "Escape Room Hub",
+  "title": "Fix popup/popout background transparency",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Create a Stock Requests page (frontend/src/pages/StockRequestsPage.tsx) with a submission form that collects: item name (text input), experience or building (dropdown selector), quantity (number input), and a comment (textarea). The dropdown must include exactly these options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
+      "text": "Ensure all modal dialogs, dropdown menus, popovers, tooltips, and any other overlay/popup components have a fully opaque (non-transparent) background so their content is always legible against any underlying content.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-4"
         ],
         "quotes": [
-          "submit a request, request to include name of item, experience or building it's for, quantity and leave a comment"
+          "Make any popups or popouts have a non transparent background so they are visible please"
         ]
       },
       "acceptanceCriteria": [
-        "Form contains fields: item name, experience/building dropdown, quantity, comment",
-        "Dropdown lists all 23 specified locations exactly as written",
-        "Submitting the form creates a new stock request in the 'Requested' column",
-        "Form resets after successful submission"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Add backend Motoko data structures and methods for stock requests. Each stock request record must store: a unique ID, item name, experience/building, quantity, comment, status (one of: #requested, #ordered, #delivered, #archived), creation timestamp, delivered timestamp (optional), and submitter name. Expose update functions to create a request, move a request to a new status, and query requests by status. Implement a function to move all delivered requests older than 7 days to archived status, callable on page load or via a scheduled check.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "This gets added to a dashboard with 3 sections, requested, ordered and delivered",
-          "when an item is moved to delivered, after 7 days it is automatically moved to an archive list"
-        ]
-      },
-      "acceptanceCriteria": [
-        "StockRequest type defined with all required fields",
-        "createStockRequest method persists a new request with status #requested",
-        "updateStockRequestStatus method changes the status of a request by ID",
-        "getStockRequestsByStatus query returns requests matching a given status",
-        "archiveDeliveredRequests function moves all delivered requests older than 7 days to #archived",
-        "getAllArchivedStockRequests query returns all archived requests"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Add React Query hooks in frontend/src/hooks/useQueries.ts for stock requests: useGetStockRequestsByStatus, useCreateStockRequest, useUpdateStockRequestStatus, useArchiveDeliveredRequests, and useGetArchivedStockRequests.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All five hooks are defined and exported from useQueries.ts",
-        "Mutation hooks invalidate relevant stock request queries on success"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Implement the kanban dashboard on the Stock Requests page with three columns: Requested, Ordered, and Delivered. Each stock request card must display the item name, experience/building, quantity, and comment. Cards must support both drag-and-drop and a manual status-change button/menu to move them between columns. On page load, trigger the archiveDeliveredRequests backend function to automatically move any delivered items older than 7 days to the archive.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "dashboard with 3 sections, requested, ordered and delivered",
-          "Ability to mark or drag item into different category"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Three visible columns: Requested, Ordered, Delivered",
-        "Cards can be dragged between columns",
-        "Cards have a button/menu to change status without dragging",
-        "Moving a card persists the status change to the backend",
-        "On page load, archiveDeliveredRequests is called to sweep old delivered items"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Create a Stock Request Archive page (frontend/src/pages/StockRequestArchivePage.tsx) that displays all archived stock requests in a table or card list, showing item name, experience/building, quantity, comment, date submitted, and date delivered. Add a clearly visible link from the Stock Requests page to this archive page.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "automatically moved to an archive list which should also be linked from that page to check historical deliveries"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Archive page lists all requests with status #archived",
-        "Each entry shows item name, experience/building, quantity, comment, submitted date, delivered date",
-        "A link from the Stock Requests page navigates to the archive page",
-        "Archive page is accessible via the sidebar or as a sub-link"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Add Stock Requests and Stock Request Archive as navigable routes in the app router (frontend/src/App.tsx) and include a Stock Requests entry in the sidebar navigation (frontend/src/components/layout/Sidebar.tsx) under an appropriate group.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Navigating to the stock requests route renders StockRequestsPage",
-        "Navigating to the archive route renders StockRequestArchivePage",
-        "Stock Requests appears in the sidebar and is clickable"
+        "All modal dialogs (e.g. AddEmployeeModal, EditEmployeeModal, AddShiftModal, ShiftDetailModal, AddTrainingModal, EditTrainingModal, AssignBadgeModal, AddDocumentModal, EditDocumentModal, etc.) render with a fully opaque background and are readable over any page content.",
+        "All dropdown menus, popovers, and select option lists render with a fully opaque background.",
+        "No popup or overlay element has a semi-transparent or transparent background that allows underlying page content to bleed through and obscure the popup's own content.",
+        "The fix is applied globally (e.g. via CSS variables or Tailwind utility classes in index.css or the relevant component styles) so all current and future overlays benefit.",
+        "Overlays still display their backdrop/scrim (dimming the page behind them) correctly — only the popup panel itself must be opaque."
       ]
     }
   ],
   "constraints": [
-    "All Motoko logic must remain in backend/main.mo as a single actor",
-    "Do not modify any files listed in frontend.immutablePaths",
-    "The 23 experience/building names must be used exactly as specified by the user",
-    "Auto-archive threshold is exactly 7 days after a request is moved to delivered status"
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Do not alter the visual theme (red/white/black escape-room palette) — only fix background opacity on popup/overlay panels."
   ],
   "nonGoals": [
-    "Food and drink stock management",
-    "Inventory tracking or stock level management",
-    "Email or push notifications for status changes",
-    "Fixing To Do items not appearing on the hub dashboard (separate request)",
-    "Adding employees to the database (separate request)"
+    "Redesigning or restyling any modal or popup beyond fixing background transparency.",
+    "Changing the backdrop/scrim that dims the page behind modals.",
+    "Adding new popup or modal components."
   ],
   "imageRequirements": {
     "required": [],

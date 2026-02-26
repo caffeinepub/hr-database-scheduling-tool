@@ -96,7 +96,23 @@ export interface NominationWinner {
     employeeId: EmployeeId;
 }
 export type StockRequestId = bigint;
+export interface EmployeeOfTheMonthNomination {
+    id: string;
+    submitterName?: string;
+    nomineeEmployeeId: EmployeeId;
+    submitterPrincipal?: Principal;
+    comment: string;
+    timestamp: bigint;
+}
 export type EmployeeId = string;
+export interface StaffBadge {
+    id: StaffBadgeId;
+    assignedAt: bigint;
+    assignedBy: EmployeeId;
+    note?: string;
+    badgeId: BadgeId;
+    employeeId: EmployeeId;
+}
 export interface Employee {
     id: EmployeeId;
     role: EmployeeRole;
@@ -108,14 +124,6 @@ export interface Employee {
     department: string;
     startDate: bigint;
     accountLevel: EmployeeRole;
-}
-export interface StaffBadge {
-    id: StaffBadgeId;
-    assignedAt: bigint;
-    assignedBy: EmployeeId;
-    note?: string;
-    badgeId: BadgeId;
-    employeeId: EmployeeId;
 }
 export type DocumentId = string;
 export interface HolidayRequest {
@@ -295,16 +303,20 @@ export interface backendInterface {
     deleteManagerNote(id: ManagerNoteId): Promise<void>;
     deleteResource(id: ResourceId): Promise<void>;
     deleteShift(id: ShiftId): Promise<void>;
+    deleteTrainingRecord(recordId: RecordId): Promise<void>;
     getAllCategories(): Promise<Array<InventoryCategory>>;
     getAllDocuments(): Promise<Array<Document>>;
+    getAllEmployeeOfTheMonthNominations(): Promise<Array<EmployeeOfTheMonthNomination>>;
     getAllEmployees(): Promise<Array<Employee>>;
     getAllHolidayRequests(): Promise<Array<HolidayRequest>>;
+    getAllItems(): Promise<Array<InventoryItem>>;
     getAllShifts(): Promise<Array<Shift>>;
     getAppraisalsByEmployee(employeeId: EmployeeId): Promise<Array<AppraisalRecord>>;
     getBadges(): Promise<Array<Badge>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getEmployee(id: EmployeeId): Promise<Employee | null>;
+    getEmployeeOfTheMonthNominationsByEmployee(employeeId: EmployeeId): Promise<Array<EmployeeOfTheMonthNomination>>;
     getHolidayRequestsByEmployee(employeeId: EmployeeId): Promise<Array<HolidayRequest>>;
     getItemsByCategory(categoryId: CategoryId): Promise<Array<InventoryItem>>;
     getManagerNotesByEmployee(employeeId: EmployeeId): Promise<Array<ManagerNote>>;
@@ -332,6 +344,7 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
     setMonthWinner(month: string, employeeId: EmployeeId): Promise<void>;
+    submitEmployeeOfTheMonthNomination(nomineeEmployeeId: EmployeeId, comment: string, submitterName: string | null): Promise<string>;
     submitHolidayRequest(request: HolidayRequest): Promise<void>;
     submitNomination(nomination: Nomination): Promise<void>;
     updateAppraisalRecord(record: AppraisalRecord): Promise<void>;

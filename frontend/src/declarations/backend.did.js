@@ -219,6 +219,14 @@ export const ToDoTask = IDL.Record({
   'completedTimestamp' : IDL.Opt(IDL.Int),
   'createdTimestamp' : IDL.Int,
 });
+export const EmployeeOfTheMonthNomination = IDL.Record({
+  'id' : IDL.Text,
+  'submitterName' : IDL.Opt(IDL.Text),
+  'nomineeEmployeeId' : EmployeeId,
+  'submitterPrincipal' : IDL.Opt(IDL.Principal),
+  'comment' : IDL.Text,
+  'timestamp' : IDL.Int,
+});
 export const HolidayRequestId = IDL.Text;
 export const HolidayRequestStatus = IDL.Variant({
   'pending' : IDL.Null,
@@ -333,10 +341,17 @@ export const idlService = IDL.Service({
   'deleteManagerNote' : IDL.Func([ManagerNoteId], [], []),
   'deleteResource' : IDL.Func([ResourceId], [], []),
   'deleteShift' : IDL.Func([ShiftId], [], []),
+  'deleteTrainingRecord' : IDL.Func([RecordId], [], []),
   'getAllCategories' : IDL.Func([], [IDL.Vec(InventoryCategory)], ['query']),
   'getAllDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
+  'getAllEmployeeOfTheMonthNominations' : IDL.Func(
+      [],
+      [IDL.Vec(EmployeeOfTheMonthNomination)],
+      ['query'],
+    ),
   'getAllEmployees' : IDL.Func([], [IDL.Vec(Employee)], ['query']),
   'getAllHolidayRequests' : IDL.Func([], [IDL.Vec(HolidayRequest)], ['query']),
+  'getAllItems' : IDL.Func([], [IDL.Vec(InventoryItem)], ['query']),
   'getAllShifts' : IDL.Func([], [IDL.Vec(Shift)], ['query']),
   'getAppraisalsByEmployee' : IDL.Func(
       [EmployeeId],
@@ -347,6 +362,11 @@ export const idlService = IDL.Service({
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getEmployee' : IDL.Func([EmployeeId], [IDL.Opt(Employee)], ['query']),
+  'getEmployeeOfTheMonthNominationsByEmployee' : IDL.Func(
+      [EmployeeId],
+      [IDL.Vec(EmployeeOfTheMonthNomination)],
+      ['query'],
+    ),
   'getHolidayRequestsByEmployee' : IDL.Func(
       [EmployeeId],
       [IDL.Vec(HolidayRequest)],
@@ -418,6 +438,11 @@ export const idlService = IDL.Service({
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
   'setMonthWinner' : IDL.Func([IDL.Text, EmployeeId], [], []),
+  'submitEmployeeOfTheMonthNomination' : IDL.Func(
+      [EmployeeId, IDL.Text, IDL.Opt(IDL.Text)],
+      [IDL.Text],
+      [],
+    ),
   'submitHolidayRequest' : IDL.Func([HolidayRequest], [], []),
   'submitNomination' : IDL.Func([Nomination], [], []),
   'updateAppraisalRecord' : IDL.Func([AppraisalRecord], [], []),
@@ -651,6 +676,14 @@ export const idlFactory = ({ IDL }) => {
     'completedTimestamp' : IDL.Opt(IDL.Int),
     'createdTimestamp' : IDL.Int,
   });
+  const EmployeeOfTheMonthNomination = IDL.Record({
+    'id' : IDL.Text,
+    'submitterName' : IDL.Opt(IDL.Text),
+    'nomineeEmployeeId' : EmployeeId,
+    'submitterPrincipal' : IDL.Opt(IDL.Principal),
+    'comment' : IDL.Text,
+    'timestamp' : IDL.Int,
+  });
   const HolidayRequestId = IDL.Text;
   const HolidayRequestStatus = IDL.Variant({
     'pending' : IDL.Null,
@@ -765,14 +798,21 @@ export const idlFactory = ({ IDL }) => {
     'deleteManagerNote' : IDL.Func([ManagerNoteId], [], []),
     'deleteResource' : IDL.Func([ResourceId], [], []),
     'deleteShift' : IDL.Func([ShiftId], [], []),
+    'deleteTrainingRecord' : IDL.Func([RecordId], [], []),
     'getAllCategories' : IDL.Func([], [IDL.Vec(InventoryCategory)], ['query']),
     'getAllDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
+    'getAllEmployeeOfTheMonthNominations' : IDL.Func(
+        [],
+        [IDL.Vec(EmployeeOfTheMonthNomination)],
+        ['query'],
+      ),
     'getAllEmployees' : IDL.Func([], [IDL.Vec(Employee)], ['query']),
     'getAllHolidayRequests' : IDL.Func(
         [],
         [IDL.Vec(HolidayRequest)],
         ['query'],
       ),
+    'getAllItems' : IDL.Func([], [IDL.Vec(InventoryItem)], ['query']),
     'getAllShifts' : IDL.Func([], [IDL.Vec(Shift)], ['query']),
     'getAppraisalsByEmployee' : IDL.Func(
         [EmployeeId],
@@ -783,6 +823,11 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getEmployee' : IDL.Func([EmployeeId], [IDL.Opt(Employee)], ['query']),
+    'getEmployeeOfTheMonthNominationsByEmployee' : IDL.Func(
+        [EmployeeId],
+        [IDL.Vec(EmployeeOfTheMonthNomination)],
+        ['query'],
+      ),
     'getHolidayRequestsByEmployee' : IDL.Func(
         [EmployeeId],
         [IDL.Vec(HolidayRequest)],
@@ -858,6 +903,11 @@ export const idlFactory = ({ IDL }) => {
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
     'setMonthWinner' : IDL.Func([IDL.Text, EmployeeId], [], []),
+    'submitEmployeeOfTheMonthNomination' : IDL.Func(
+        [EmployeeId, IDL.Text, IDL.Opt(IDL.Text)],
+        [IDL.Text],
+        [],
+      ),
     'submitHolidayRequest' : IDL.Func([HolidayRequest], [], []),
     'submitNomination' : IDL.Func([Nomination], [], []),
     'updateAppraisalRecord' : IDL.Func([AppraisalRecord], [], []),

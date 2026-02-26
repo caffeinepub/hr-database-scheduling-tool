@@ -1,99 +1,34 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T19:48:36.383Z",
+  "generatedAt": "2026-02-26T20:32:50.189Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 5,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Create a Stock Requests page (frontend/src/pages/StockRequestsPage.tsx) with a submission form that collects: item name (text input), experience or building (dropdown selector), quantity (number input), and a comment (textarea). The dropdown must include exactly these options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St George's General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room.",
+        "summary": "Ensure all modal dialogs, dropdown menus, popovers, tooltips, and any other overlay/popup components have a fully opaque (non-transparent) background so their content is always legible against any underlying content.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/StockRequestsPage.tsx"
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/pages/StockRequestsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Add backend Motoko data structures and methods for stock requests. Each stock request record must store: a unique ID, item name, experience/building, quantity, comment, status (one of: #requested, #ordered, #delivered, #archived), creation timestamp, delivered timestamp (optional), and submitter name. Expose update functions to create a request, move a request to a new status, and query requests by status. Implement a function to move all delivered requests older than 7 days to archived status, callable on page load or via a scheduled check.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Add React Query hooks in frontend/src/hooks/useQueries.ts for stock requests: useGetStockRequestsByStatus, useCreateStockRequest, useUpdateStockRequestStatus, useArchiveDeliveredRequests, and useGetArchivedStockRequests.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Implement the kanban dashboard on the Stock Requests page with three columns: Requested, Ordered, and Delivered. Each stock request card must display the item name, experience/building, quantity, and comment. Cards must support both drag-and-drop and a manual status-change button/menu to move them between columns. On page load, trigger the archiveDeliveredRequests backend function to automatically move any delivered items older than 7 days to the archive.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/StockRequestsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/StockRequestsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Create a Stock Request Archive page (frontend/src/pages/StockRequestArchivePage.tsx) that displays all archived stock requests in a table or card list, showing item name, experience/building, quantity, comment, date submitted, and date delivered. Add a clearly visible link from the Stock Requests page to this archive page.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/StockRequestArchivePage.tsx",
-          "frontend/src/pages/StockRequestsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/StockRequestArchivePage.tsx",
-          "frontend/src/pages/StockRequestsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Add Stock Requests and Stock Request Archive as navigable routes in the app router (frontend/src/App.tsx) and include a Stock Requests entry in the sidebar navigation (frontend/src/components/layout/Sidebar.tsx) under an appropriate group.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
+          "frontend/src/index.css"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/layout/Sidebar.tsx",
-    "frontend/src/components/profile/ManagerNotesTab.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/StockRequestArchivePage.tsx",
-    "frontend/src/pages/StockRequestsPage.tsx",
+    "frontend/src/index.css",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

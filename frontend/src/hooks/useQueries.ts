@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { toast } from 'sonner';
 import type {
   Employee,
   TrainingRecord,
@@ -11,30 +10,38 @@ import type {
   HolidayRequest,
   Document,
   Resource,
+  ResourceCategory,
   Nomination,
-  NominationWinner,
   ManagerNote,
-  UserProfile,
-  UserApprovalInfo,
   InventoryCategory,
   InventoryItem,
   Badge,
   StaffBadge,
+  UserProfile,
   ToDoTask,
   StockRequest,
   StockRequestStatus,
-} from '../backend';
-import {
-  ResourceCategory,
-  HolidayRequestStatus,
-  UserRole,
-  DayOfWeek,
+  StockRequestId,
+  EmployeeId,
+  RecordId,
+  ManagerNoteId,
+  InventoryItemId,
+  DocumentId,
+  ResourceId,
+  ShiftId,
+  HolidayRequestId,
+  BadgeId,
+  StaffBadgeId,
+  TaskId,
+  UserApprovalInfo,
   ApprovalStatus,
-  StockRequestStatus as StockRequestStatusEnum,
+  HolidayRequestStatus,
+  EmployeeOfTheMonthNomination,
 } from '../backend';
-import type { Principal } from '@dfinity/principal';
+import { UserRole, StockRequestStatus as StockRequestStatusEnum } from '../backend';
+import type { Principal } from '@icp-sdk/core/principal';
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// ─── Auth / Admin ────────────────────────────────────────────────────────────
 
 export function useIsCallerAdmin() {
   const { actor, isFetching } = useActor();
@@ -43,6 +50,18 @@ export function useIsCallerAdmin() {
     queryFn: async () => {
       if (!actor) return false;
       return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetCallerUserRole() {
+  const { actor, isFetching } = useActor();
+  return useQuery<UserRole>({
+    queryKey: ['callerUserRole'],
+    queryFn: async () => {
+      if (!actor) return UserRole.guest;
+      return actor.getCallerUserRole();
     },
     enabled: !!actor && !isFetching,
   });
@@ -66,41 +85,17 @@ export function useGetCallerUserProfile() {
   };
 }
 
-export function useGetCallerUserRole() {
-  const { actor, isFetching } = useActor();
-  return useQuery<UserRole>({
-    queryKey: ['callerUserRole'],
-    queryFn: async () => {
-      if (!actor) return UserRole.guest;
-      return actor.getCallerUserRole();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
 export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (profile: UserProfile) => {
+  return useMutation<void, Error, UserProfile>({
+    mutationFn: async (profile) => {
       if (!actor) throw new Error('Actor not available');
       return actor.saveCallerUserProfile(profile);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
-  });
-}
-
-export function useIsCallerApproved() {
-  const { actor, isFetching } = useActor();
-  return useQuery<boolean>({
-    queryKey: ['isCallerApproved'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerApproved();
-    },
-    enabled: !!actor && !isFetching,
   });
 }
 
@@ -119,8 +114,8 @@ export function useListApprovals() {
 export function useSetApproval() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ user, status }: { user: Principal; status: ApprovalStatus }) => {
+  return useMutation<void, Error, { user: Principal; status: ApprovalStatus }>({
+    mutationFn: async ({ user, status }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.setApproval(user, status);
     },
@@ -130,35 +125,19 @@ export function useSetApproval() {
   });
 }
 
-export function useAssignUserRole() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ user, role }: { user: Principal; role: UserRole }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.assignCallerUserRole(user, role);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['callerUserRole'] });
-    },
-  });
-}
-
-// ─── User Profile lookup ──────────────────────────────────────────────────────
-
-export function useGetUserProfile(user: Principal | null) {
+export function useIsCallerApproved() {
   const { actor, isFetching } = useActor();
-  return useQuery<UserProfile | null>({
-    queryKey: ['userProfile', user?.toString()],
+  return useQuery<boolean>({
+    queryKey: ['isCallerApproved'],
     queryFn: async () => {
-      if (!actor || !user) return null;
-      return actor.getUserProfile(user);
+      if (!actor) return false;
+      return actor.isCallerApproved();
     },
-    enabled: !!actor && !isFetching && !!user,
+    enabled: !!actor && !isFetching,
   });
 }
 
-// ─── Employees ────────────────────────────────────────────────────────────────
+// ─── Employees ───────────────────────────────────────────────────────────────
 
 export function useGetAllEmployees() {
   const { actor, isFetching } = useActor();
@@ -172,7 +151,7 @@ export function useGetAllEmployees() {
   });
 }
 
-export function useGetEmployee(id: string) {
+export function useGetEmployee(id: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<Employee | null>({
     queryKey: ['employee', id],
@@ -187,17 +166,13 @@ export function useGetEmployee(id: string) {
 export function useAddEmployee() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (employee: Employee) => {
+  return useMutation<void, Error, Employee>({
+    mutationFn: async (employee) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addEmployee(employee);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Employee added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add employee');
     },
   });
 }
@@ -205,24 +180,20 @@ export function useAddEmployee() {
 export function useUpdateEmployee() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (employee: Employee) => {
+  return useMutation<void, Error, Employee>({
+    mutationFn: async (employee) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateEmployee(employee);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Employee updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update employee');
     },
   });
 }
 
-// ─── Training ─────────────────────────────────────────────────────────────────
+// ─── Training Records ────────────────────────────────────────────────────────
 
-export function useGetTrainingRecordsByEmployee(employeeId: string) {
+export function useGetTrainingRecordsByEmployee(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<TrainingRecord[]>({
     queryKey: ['trainingRecords', employeeId],
@@ -234,24 +205,20 @@ export function useGetTrainingRecordsByEmployee(employeeId: string) {
   });
 }
 
-// Aliases used by various components
+// Aliases
 export const useGetTrainingRecords = useGetTrainingRecordsByEmployee;
 export const useGetTrainingByEmployee = useGetTrainingRecordsByEmployee;
 
 export function useAddTrainingRecord() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (record: TrainingRecord) => {
+  return useMutation<void, Error, TrainingRecord>({
+    mutationFn: async (record) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addTrainingRecord(record);
     },
     onSuccess: (_, record) => {
       queryClient.invalidateQueries({ queryKey: ['trainingRecords', record.employeeId] });
-      toast.success('Training record added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add training record');
     },
   });
 }
@@ -259,24 +226,34 @@ export function useAddTrainingRecord() {
 export function useUpdateTrainingRecord() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (record: TrainingRecord) => {
+  return useMutation<void, Error, TrainingRecord>({
+    mutationFn: async (record) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateTrainingRecord(record);
     },
     onSuccess: (_, record) => {
       queryClient.invalidateQueries({ queryKey: ['trainingRecords', record.employeeId] });
-      toast.success('Training record updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update training record');
     },
   });
 }
 
-// ─── Sickness ─────────────────────────────────────────────────────────────────
+export function useDeleteTrainingRecord() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { recordId: RecordId; employeeId: EmployeeId }>({
+    mutationFn: async ({ recordId }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteTrainingRecord(recordId);
+    },
+    onSuccess: (_, { employeeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['trainingRecords', employeeId] });
+    },
+  });
+}
 
-export function useGetSicknessRecordsByEmployee(employeeId: string) {
+// ─── Sickness Records ────────────────────────────────────────────────────────
+
+export function useGetSicknessRecordsByEmployee(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<SicknessRecord[]>({
     queryKey: ['sicknessRecords', employeeId],
@@ -288,34 +265,30 @@ export function useGetSicknessRecordsByEmployee(employeeId: string) {
   });
 }
 
-// Aliases used by various components
+// Aliases
 export const useGetSicknessRecords = useGetSicknessRecordsByEmployee;
 export const useGetSicknessByEmployee = useGetSicknessRecordsByEmployee;
 
 export function useAddSicknessRecord() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (record: SicknessRecord) => {
+  return useMutation<void, Error, SicknessRecord>({
+    mutationFn: async (record) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addSicknessRecord(record);
     },
     onSuccess: (_, record) => {
       queryClient.invalidateQueries({ queryKey: ['sicknessRecords', record.employeeId] });
-      toast.success('Sickness record added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add sickness record');
     },
   });
 }
 
-// ─── Appraisals ───────────────────────────────────────────────────────────────
+// ─── Appraisal Records ───────────────────────────────────────────────────────
 
-export function useGetAppraisalsByEmployee(employeeId: string) {
+export function useGetAppraisalRecordsByEmployee(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<AppraisalRecord[]>({
-    queryKey: ['appraisals', employeeId],
+    queryKey: ['appraisalRecords', employeeId],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getAppraisalsByEmployee(employeeId);
@@ -324,23 +297,20 @@ export function useGetAppraisalsByEmployee(employeeId: string) {
   });
 }
 
-// Alias used by AppraisalsTab and AppraisalsDashboardPage
-export const useGetAppraisals = useGetAppraisalsByEmployee;
+// Aliases
+export const useGetAppraisals = useGetAppraisalRecordsByEmployee;
+export const useGetAppraisalsByEmployee = useGetAppraisalRecordsByEmployee;
 
 export function useAddAppraisalRecord() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (record: AppraisalRecord) => {
+  return useMutation<void, Error, AppraisalRecord>({
+    mutationFn: async (record) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addAppraisalRecord(record);
     },
     onSuccess: (_, record) => {
-      queryClient.invalidateQueries({ queryKey: ['appraisals', record.employeeId] });
-      toast.success('Appraisal record added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add appraisal record');
+      queryClient.invalidateQueries({ queryKey: ['appraisalRecords', record.employeeId] });
     },
   });
 }
@@ -348,22 +318,18 @@ export function useAddAppraisalRecord() {
 export function useUpdateAppraisalRecord() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (record: AppraisalRecord) => {
+  return useMutation<void, Error, AppraisalRecord>({
+    mutationFn: async (record) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateAppraisalRecord(record);
     },
     onSuccess: (_, record) => {
-      queryClient.invalidateQueries({ queryKey: ['appraisals', record.employeeId] });
-      toast.success('Appraisal updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update appraisal');
+      queryClient.invalidateQueries({ queryKey: ['appraisalRecords', record.employeeId] });
     },
   });
 }
 
-// ─── Shifts ───────────────────────────────────────────────────────────────────
+// ─── Shifts ──────────────────────────────────────────────────────────────────
 
 export function useGetAllShifts() {
   const { actor, isFetching } = useActor();
@@ -377,7 +343,7 @@ export function useGetAllShifts() {
   });
 }
 
-export function useGetShiftsByEmployee(employeeId: string) {
+export function useGetShiftsByEmployee(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<Shift[]>({
     queryKey: ['shifts', 'employee', employeeId],
@@ -392,17 +358,13 @@ export function useGetShiftsByEmployee(employeeId: string) {
 export function useAddShift() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (shift: Shift) => {
+  return useMutation<void, Error, Shift>({
+    mutationFn: async (shift) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addShift(shift);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
-      toast.success('Shift added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add shift');
     },
   });
 }
@@ -410,17 +372,13 @@ export function useAddShift() {
 export function useUpdateShift() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (shift: Shift) => {
+  return useMutation<void, Error, Shift>({
+    mutationFn: async (shift) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateShift(shift);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
-      toast.success('Shift updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update shift');
     },
   });
 }
@@ -428,24 +386,20 @@ export function useUpdateShift() {
 export function useDeleteShift() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
+  return useMutation<void, Error, ShiftId>({
+    mutationFn: async (id) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteShift(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
-      toast.success('Shift deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete shift');
     },
   });
 }
 
-// ─── Shift Notes ──────────────────────────────────────────────────────────────
+// ─── Shift Notes ─────────────────────────────────────────────────────────────
 
-export function useGetShiftNotesByShift(shiftId: string) {
+export function useGetShiftNotesByShift(shiftId: ShiftId) {
   const { actor, isFetching } = useActor();
   return useQuery<ShiftNote[]>({
     queryKey: ['shiftNotes', shiftId],
@@ -463,27 +417,23 @@ export const useGetShiftNotes = useGetShiftNotesByShift;
 export function useAddShiftNote() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (note: ShiftNote) => {
+  return useMutation<void, Error, ShiftNote>({
+    mutationFn: async (note) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addShiftNote(note);
     },
     onSuccess: (_, note) => {
       queryClient.invalidateQueries({ queryKey: ['shiftNotes', note.shiftId] });
-      toast.success('Note added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add note');
     },
   });
 }
 
-// ─── Holiday Requests ─────────────────────────────────────────────────────────
+// ─── Holiday Requests ────────────────────────────────────────────────────────
 
 export function useGetAllHolidayRequests() {
   const { actor, isFetching } = useActor();
   return useQuery<HolidayRequest[]>({
-    queryKey: ['holidayRequests', 'all'],
+    queryKey: ['holidayRequests'],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getAllHolidayRequests();
@@ -492,7 +442,7 @@ export function useGetAllHolidayRequests() {
   });
 }
 
-export function useGetHolidayRequestsByEmployee(employeeId: string) {
+export function useGetHolidayRequestsByEmployee(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<HolidayRequest[]>({
     queryKey: ['holidayRequests', employeeId],
@@ -507,17 +457,13 @@ export function useGetHolidayRequestsByEmployee(employeeId: string) {
 export function useSubmitHolidayRequest() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (request: HolidayRequest) => {
+  return useMutation<void, Error, HolidayRequest>({
+    mutationFn: async (request) => {
       if (!actor) throw new Error('Actor not available');
       return actor.submitHolidayRequest(request);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['holidayRequests'] });
-      toast.success('Holiday request submitted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to submit holiday request');
     },
   });
 }
@@ -525,22 +471,18 @@ export function useSubmitHolidayRequest() {
 export function useUpdateHolidayRequestStatus() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: HolidayRequestStatus }) => {
+  return useMutation<void, Error, { id: HolidayRequestId; status: HolidayRequestStatus }>({
+    mutationFn: async ({ id, status }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateHolidayRequestStatus(id, status);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['holidayRequests'] });
-      toast.success('Holiday request status updated');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update holiday request status');
     },
   });
 }
 
-// ─── Documents ────────────────────────────────────────────────────────────────
+// ─── Documents ───────────────────────────────────────────────────────────────
 
 export function useGetAllDocuments() {
   const { actor, isFetching } = useActor();
@@ -557,17 +499,13 @@ export function useGetAllDocuments() {
 export function useAddDocument() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (document: Document) => {
+  return useMutation<void, Error, Document>({
+    mutationFn: async (document) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addDocument(document);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add document');
     },
   });
 }
@@ -575,17 +513,13 @@ export function useAddDocument() {
 export function useUpdateDocument() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (document: Document) => {
+  return useMutation<void, Error, Document>({
+    mutationFn: async (document) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateDocument(document);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update document');
     },
   });
 }
@@ -593,22 +527,18 @@ export function useUpdateDocument() {
 export function useDeleteDocument() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
+  return useMutation<void, Error, DocumentId>({
+    mutationFn: async (id) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteDocument(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete document');
     },
   });
 }
 
-// ─── Resources ────────────────────────────────────────────────────────────────
+// ─── Resources ───────────────────────────────────────────────────────────────
 
 export function useGetResources(category?: ResourceCategory) {
   const { actor, isFetching } = useActor();
@@ -625,17 +555,13 @@ export function useGetResources(category?: ResourceCategory) {
 export function useAddResource() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (resource: Resource) => {
+  return useMutation<void, Error, Resource>({
+    mutationFn: async (resource) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addResource(resource);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
-      toast.success('Resource added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add resource');
     },
   });
 }
@@ -643,17 +569,13 @@ export function useAddResource() {
 export function useUpdateResource() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (resource: Resource) => {
+  return useMutation<void, Error, Resource>({
+    mutationFn: async (resource) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateResource(resource);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
-      toast.success('Resource updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update resource');
     },
   });
 }
@@ -661,22 +583,48 @@ export function useUpdateResource() {
 export function useDeleteResource() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
+  return useMutation<void, Error, ResourceId>({
+    mutationFn: async (id) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteResource(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
-      toast.success('Resource deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete resource');
     },
   });
 }
 
-// ─── Nominations ──────────────────────────────────────────────────────────────
+// ─── Nominations (Employee of the Month) ─────────────────────────────────────
+
+export function useGetAllEmployeeOfTheMonthNominations() {
+  const { actor, isFetching } = useActor();
+  return useQuery<EmployeeOfTheMonthNomination[]>({
+    queryKey: ['employeeOfTheMonthNominations'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllEmployeeOfTheMonthNominations();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSubmitEmployeeOfTheMonthNomination() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation<
+    string,
+    Error,
+    { nomineeEmployeeId: EmployeeId; comment: string; submitterName: string | null }
+  >({
+    mutationFn: async ({ nomineeEmployeeId, comment, submitterName }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.submitEmployeeOfTheMonthNomination(nomineeEmployeeId, comment, submitterName);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employeeOfTheMonthNominations'] });
+    },
+  });
+}
 
 export function useGetNominationsByMonth(month: string) {
   const { actor, isFetching } = useActor();
@@ -690,28 +638,10 @@ export function useGetNominationsByMonth(month: string) {
   });
 }
 
-export function useSubmitNomination() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (nomination: Nomination) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.submitNomination(nomination);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nominations'] });
-      toast.success('Nomination submitted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to submit nomination');
-    },
-  });
-}
-
 export function useGetWinnerByMonth(month: string) {
   const { actor, isFetching } = useActor();
-  return useQuery<NominationWinner | null>({
-    queryKey: ['winner', month],
+  return useQuery({
+    queryKey: ['nominationWinner', month],
     queryFn: async () => {
       if (!actor) return null;
       return actor.getWinnerByMonth(month);
@@ -723,17 +653,13 @@ export function useGetWinnerByMonth(month: string) {
 export function useSetMonthWinner() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ month, employeeId }: { month: string; employeeId: string }) => {
+  return useMutation<void, Error, { month: string; employeeId: EmployeeId }>({
+    mutationFn: async ({ month, employeeId }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.setMonthWinner(month, employeeId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['winner'] });
-      toast.success('Winner set successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to set winner');
+    onSuccess: (_, { month }) => {
+      queryClient.invalidateQueries({ queryKey: ['nominationWinner', month] });
     },
   });
 }
@@ -741,24 +667,34 @@ export function useSetMonthWinner() {
 export function useMarkWinnerBonus() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (month: string) => {
+  return useMutation<void, Error, string>({
+    mutationFn: async (month) => {
       if (!actor) throw new Error('Actor not available');
       return actor.markWinnerBonus(month);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['winner'] });
-      toast.success('Bonus marked as received');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to mark bonus');
+    onSuccess: (_, month) => {
+      queryClient.invalidateQueries({ queryKey: ['nominationWinner', month] });
     },
   });
 }
 
-// ─── Manager Notes ────────────────────────────────────────────────────────────
+export function useSubmitNomination() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, Nomination>({
+    mutationFn: async (nomination) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.submitNomination(nomination);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['nominations'] });
+    },
+  });
+}
 
-export function useGetManagerNotesByEmployee(employeeId: string) {
+// ─── Manager Notes ───────────────────────────────────────────────────────────
+
+export function useGetManagerNotesByEmployee(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<ManagerNote[]>({
     queryKey: ['managerNotes', employeeId],
@@ -770,23 +706,16 @@ export function useGetManagerNotesByEmployee(employeeId: string) {
   });
 }
 
-// Alias
-export const useGetManagerNotes = useGetManagerNotesByEmployee;
-
 export function useAddManagerNote() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (note: ManagerNote) => {
+  return useMutation<void, Error, ManagerNote>({
+    mutationFn: async (note) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addManagerNote(note);
     },
     onSuccess: (_, note) => {
       queryClient.invalidateQueries({ queryKey: ['managerNotes', note.employeeId] });
-      toast.success('Note added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add note');
     },
   });
 }
@@ -794,17 +723,13 @@ export function useAddManagerNote() {
 export function useUpdateManagerNote() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (note: ManagerNote) => {
+  return useMutation<void, Error, ManagerNote>({
+    mutationFn: async (note) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateManagerNote(note);
     },
     onSuccess: (_, note) => {
       queryClient.invalidateQueries({ queryKey: ['managerNotes', note.employeeId] });
-      toast.success('Note updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update note');
     },
   });
 }
@@ -812,22 +737,18 @@ export function useUpdateManagerNote() {
 export function useDeleteManagerNote() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
+  return useMutation<void, Error, string>({
+    mutationFn: async (id) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteManagerNote(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['managerNotes'] });
-      toast.success('Note deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete note');
     },
   });
 }
 
-// ─── Inventory ────────────────────────────────────────────────────────────────
+// ─── Inventory ───────────────────────────────────────────────────────────────
 
 export function useGetAllCategories() {
   const { actor, isFetching } = useActor();
@@ -836,6 +757,18 @@ export function useGetAllCategories() {
     queryFn: async () => {
       if (!actor) return [];
       return actor.getAllCategories();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetAllItems() {
+  const { actor, isFetching } = useActor();
+  return useQuery<InventoryItem[]>({
+    queryKey: ['inventoryItems'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllItems();
     },
     enabled: !!actor && !isFetching,
   });
@@ -856,8 +789,8 @@ export function useGetItemsByCategory(categoryId: string) {
 export function useAddCategory() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (category: InventoryCategory) => {
+  return useMutation<void, Error, InventoryCategory>({
+    mutationFn: async (category) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addCategory(category);
     },
@@ -867,15 +800,16 @@ export function useAddCategory() {
   });
 }
 
-export function useAddInventoryItem() {
+export function useAddItem() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (item: InventoryItem) => {
+  return useMutation<void, Error, InventoryItem>({
+    mutationFn: async (item) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addItem(item);
     },
     onSuccess: (_, item) => {
+      queryClient.invalidateQueries({ queryKey: ['inventoryItems'] });
       queryClient.invalidateQueries({ queryKey: ['inventoryItems', item.categoryId] });
     },
   });
@@ -884,32 +818,33 @@ export function useAddInventoryItem() {
 export function useUpdateInventoryItem() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (item: InventoryItem) => {
+  return useMutation<void, Error, InventoryItem>({
+    mutationFn: async (item) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateItem(item);
     },
     onSuccess: (_, item) => {
+      queryClient.invalidateQueries({ queryKey: ['inventoryItems'] });
       queryClient.invalidateQueries({ queryKey: ['inventoryItems', item.categoryId] });
     },
   });
 }
 
-export function useDeleteInventoryItem() {
+export function useDeleteItem() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ itemId, categoryId }: { itemId: string; categoryId: string }) => {
+  return useMutation<void, Error, InventoryItemId>({
+    mutationFn: async (itemId) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteItem(itemId);
     },
-    onSuccess: (_, { categoryId }) => {
-      queryClient.invalidateQueries({ queryKey: ['inventoryItems', categoryId] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventoryItems'] });
     },
   });
 }
 
-// ─── Badges ───────────────────────────────────────────────────────────────────
+// ─── Badges ──────────────────────────────────────────────────────────────────
 
 export function useGetBadges() {
   const { actor, isFetching } = useActor();
@@ -926,8 +861,8 @@ export function useGetBadges() {
 export function useAddBadge() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (badge: Badge) => {
+  return useMutation<void, Error, Badge>({
+    mutationFn: async (badge) => {
       if (!actor) throw new Error('Actor not available');
       return actor.addBadge(badge);
     },
@@ -937,7 +872,7 @@ export function useAddBadge() {
   });
 }
 
-export function useGetStaffBadges(employeeId: string) {
+export function useGetStaffBadges(employeeId: EmployeeId) {
   const { actor, isFetching } = useActor();
   return useQuery<StaffBadge[]>({
     queryKey: ['staffBadges', employeeId],
@@ -952,8 +887,8 @@ export function useGetStaffBadges(employeeId: string) {
 export function useAssignBadgeToStaff() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (assignment: StaffBadge) => {
+  return useMutation<void, Error, StaffBadge>({
+    mutationFn: async (assignment) => {
       if (!actor) throw new Error('Actor not available');
       return actor.assignBadgeToStaff(assignment);
     },
@@ -966,8 +901,8 @@ export function useAssignBadgeToStaff() {
 export function useRemoveBadgeFromStaff() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ assignmentId, employeeId }: { assignmentId: string; employeeId: string }) => {
+  return useMutation<void, Error, { assignmentId: StaffBadgeId; employeeId: EmployeeId }>({
+    mutationFn: async ({ assignmentId }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.removeBadgeFromStaff(assignmentId);
     },
@@ -977,7 +912,7 @@ export function useRemoveBadgeFromStaff() {
   });
 }
 
-// ─── To-Do Tasks ──────────────────────────────────────────────────────────────
+// ─── To-Do Tasks ─────────────────────────────────────────────────────────────
 
 export function useGetTasks() {
   const { actor, isFetching } = useActor();
@@ -991,7 +926,7 @@ export function useGetTasks() {
   });
 }
 
-export function useGetTasksForToday(dayOfWeek: DayOfWeek) {
+export function useGetTasksForToday(dayOfWeek: import('../backend').DayOfWeek) {
   const { actor, isFetching } = useActor();
   return useQuery<ToDoTask[]>({
     queryKey: ['tasksForToday', dayOfWeek],
@@ -1006,18 +941,14 @@ export function useGetTasksForToday(dayOfWeek: DayOfWeek) {
 export function useCreateTask() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (task: ToDoTask) => {
+  return useMutation<void, Error, ToDoTask>({
+    mutationFn: async (task) => {
       if (!actor) throw new Error('Actor not available');
       return actor.createTask(task);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['tasksForToday'] });
-      toast.success('Task created successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create task');
     },
   });
 }
@@ -1025,23 +956,19 @@ export function useCreateTask() {
 export function useMarkTaskComplete() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (taskId: string) => {
+  return useMutation<void, Error, TaskId>({
+    mutationFn: async (taskId) => {
       if (!actor) throw new Error('Actor not available');
       return actor.markTaskComplete(taskId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['tasksForToday'] });
-      toast.success('Task marked as complete');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to mark task complete');
     },
   });
 }
 
-// ─── Stock Requests ───────────────────────────────────────────────────────────
+// ─── Stock Requests ──────────────────────────────────────────────────────────
 
 export function useGetStockRequestsByStatus(status: StockRequestStatus) {
   const { actor, isFetching } = useActor();
@@ -1055,44 +982,31 @@ export function useGetStockRequestsByStatus(status: StockRequestStatus) {
   });
 }
 
+// Alias used by StockRequestArchivePage
 export function useGetArchivedStockRequests() {
-  const { actor, isFetching } = useActor();
-  return useQuery<StockRequest[]>({
-    queryKey: ['stockRequests', StockRequestStatusEnum.archived],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getStockRequestsByStatus(StockRequestStatusEnum.archived);
-    },
-    enabled: !!actor && !isFetching,
-  });
+  return useGetStockRequestsByStatus(StockRequestStatusEnum.archived);
 }
 
 export function useCreateStockRequest() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      itemName,
-      experience,
-      quantity,
-      notes,
-      submitterName,
-    }: {
+  return useMutation<
+    StockRequestId,
+    Error,
+    {
       itemName: string;
       experience: string;
       quantity: bigint;
       notes: string;
       submitterName: string;
-    }) => {
+    }
+  >({
+    mutationFn: async ({ itemName, experience, quantity, notes, submitterName }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.createStockRequest(itemName, experience, quantity, notes, submitterName);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stockRequests'] });
-      toast.success('Stock request submitted');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to submit stock request');
     },
   });
 }
@@ -1100,25 +1014,21 @@ export function useCreateStockRequest() {
 export function useUpdateStockRequestStatus() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, newStatus }: { id: bigint; newStatus: StockRequestStatus }) => {
+  return useMutation<void, Error, { id: StockRequestId; newStatus: StockRequestStatus }>({
+    mutationFn: async ({ id, newStatus }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateStockRequestStatus(id, newStatus);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stockRequests'] });
-      toast.success('Status updated');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update status');
     },
   });
 }
 
-export function useArchiveDeliveredRequests() {
+export function useArchiveOldDeliveredRequests() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<void, Error, void>({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.archiveOldDeliveredRequests();
@@ -1126,5 +1036,20 @@ export function useArchiveDeliveredRequests() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stockRequests'] });
     },
+  });
+}
+
+// Alias used by StockRequestsPage
+export const useArchiveDeliveredRequests = useArchiveOldDeliveredRequests;
+
+export function useGetStockRequestById(id: StockRequestId) {
+  const { actor, isFetching } = useActor();
+  return useQuery<StockRequest | null>({
+    queryKey: ['stockRequest', id.toString()],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getStockRequestById(id);
+    },
+    enabled: !!actor && !isFetching,
   });
 }

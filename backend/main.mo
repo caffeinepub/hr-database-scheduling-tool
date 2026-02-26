@@ -6,12 +6,13 @@ import Text "mo:core/Text";
 import Nat "mo:core/Nat";
 import Runtime "mo:core/Runtime";
 import MixinStorage "blob-storage/Mixin";
+import Order "mo:core/Order";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Principal "mo:core/Principal";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
 import Time "mo:core/Time";
-import Order "mo:core/Order";
+import Float "mo:core/Float";
 
 actor {
   include MixinStorage();
@@ -299,6 +300,17 @@ actor {
     #other;
   };
 
+  public type EmployeeOfTheMonthNomination = {
+    id : Text;
+    nomineeEmployeeId : EmployeeId;
+    comment : Text;
+    submitterPrincipal : ?Principal;
+    submitterName : ?Text;
+    timestamp : Int;
+  };
+
+  let nominationsMap = Map.empty<Text, EmployeeOfTheMonthNomination>();
+
   // Nomination Type
   type Nomination = {
     id : NominationId;
@@ -453,6 +465,13 @@ actor {
       case (null) { Runtime.trap("Item does not exist!") };
       case (?_) { inventoryItems.add(item.itemId, item) };
     };
+  };
+
+  public query ({ caller }) func getAllItems() : async [InventoryItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view inventory items");
+    };
+    inventoryItems.values().toArray();
   };
 
   public shared ({ caller }) func deleteItem(itemId : InventoryItemId) : async () {
@@ -622,6 +641,18 @@ actor {
       func(record) { record.employeeId == employeeId }
     );
     iter.toArray();
+  };
+
+  public shared ({ caller }) func deleteTrainingRecord(recordId : RecordId) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can delete training records");
+    };
+    switch (trainingMap.get(recordId)) {
+      case (null) { Runtime.trap("Training record not found") };
+      case (?_) {
+        trainingMap.remove(recordId);
+      };
+    };
   };
 
   // Sickness Records
@@ -1107,5 +1138,53 @@ actor {
         toDoTaskMap.add(taskId, updatedTask);
       };
     };
+  };
+
+  // Employee of the Month Nominations
+  // Any logged-in user can submit a nomination.
+  // The submitter's identity is always taken from the verified caller principal,
+  // not from any caller-supplied parameter, to prevent identity spoofing.
+  public shared ({ caller }) func submitEmployeeOfTheMonthNomination(nomineeEmployeeId : EmployeeId, comment : Text, submitterName : ?Text) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only logged-in users can submit nominations");
+    };
+
+    let nominationId = "nom_" # nomineeEmployeeId # "_" # Time.now().toText();
+
+    let newNomination : EmployeeOfTheMonthNomination = {
+      id = nominationId;
+      nomineeEmployeeId;
+      comment;
+      // Always record the verified caller principal as the submitter
+      submitterPrincipal = ?caller;
+      submitterName;
+      timestamp = Time.now();
+    };
+
+    nominationsMap.add(nominationId, newNomination);
+
+    nominationId;
+  };
+
+  // Only admins can view all nominations
+  public query ({ caller }) func getAllEmployeeOfTheMonthNominations() : async [EmployeeOfTheMonthNomination] {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can access all nominations");
+    };
+
+    nominationsMap.values().toArray();
+  };
+
+  // Any logged-in user can view nominations for a specific employee
+  public query ({ caller }) func getEmployeeOfTheMonthNominationsByEmployee(employeeId : EmployeeId) : async [EmployeeOfTheMonthNomination] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only logged-in users can view nominations");
+    };
+
+    nominationsMap.values().filter(
+      func(nomination) {
+        nomination.nomineeEmployeeId == employeeId
+      }
+    ).toArray();
   };
 };

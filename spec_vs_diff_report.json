@@ -1,20 +1,14 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T19:48:36.379Z",
-  "summary": "The diff implements all six requirements of the stock request system. REQ-1 (StockRequestsPage with form and 23 locations), REQ-2 (backend Motoko data structures and methods), REQ-3 (React Query hooks), REQ-4 (kanban dashboard with drag-and-drop and manual status change), REQ-5 (archive page with table and back-link), and REQ-6 (routing and sidebar) all appear implemented. The StockRequest type uses 'notes' instead of 'comment' as the field name, but this is a minor naming variation. No significant hallucinations or missing requirements detected.",
+  "generatedAt": "2026-02-26T20:32:50.186Z",
+  "summary": "The diff modifies frontend/src/index.css to add global CSS rules targeting Radix UI/shadcn overlay surfaces (dialogs, dropdowns, selects, popovers, tooltips) with fully opaque background-color declarations using CSS variables from the existing theme. The fix is applied globally via CSS so all current and future overlays benefit. The backdrop/scrim is intentionally excluded. The visual theme (red/white/black palette) is preserved. This directly addresses REQ-1 and its acceptance criteria.",
   "missing_requirements": [],
   "hallucinated_features": [],
-  "confidence": 0.87,
+  "confidence": 0.9,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/layout/Sidebar.tsx",
-    "frontend/src/components/profile/ManagerNotesTab.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/StockRequestArchivePage.tsx",
-    "frontend/src/pages/StockRequestsPage.tsx",
+    "frontend/src/index.css",
     "project_state.json"
   ]
 }

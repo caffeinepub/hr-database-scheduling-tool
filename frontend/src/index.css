@@ -109,25 +109,92 @@
   }
 }
 
-/* Fix transparent dropdowns globally */
-[data-radix-select-content],
-[data-radix-popper-content-wrapper] [role="listbox"],
-[role="listbox"] {
-  background-color: white !important;
+/* ============================================================
+   GLOBAL OPAQUE BACKGROUNDS FOR ALL POPUP / OVERLAY PANELS
+   Targets every Radix UI / shadcn overlay surface so that
+   underlying page content never bleeds through.
+   The backdrop/scrim (DialogOverlay) is intentionally excluded
+   so it continues to dim the page correctly.
+   ============================================================ */
+
+/* Dialog / AlertDialog content panels */
+[role="dialog"],
+[data-radix-dialog-content],
+[data-radix-alert-dialog-content] {
+  background-color: hsl(0 0% 100%) !important;
+  background-color: var(--popover) !important;
 }
 
+/* Dropdown menus */
+[data-radix-dropdown-menu-content],
+[data-radix-context-menu-content],
+[data-radix-menubar-content],
+[data-radix-navigation-menu-content],
+[role="menu"] {
+  background-color: hsl(0 0% 100%) !important;
+  background-color: var(--popover) !important;
+}
+
+/* Select dropdowns */
+[data-radix-select-content],
+[data-radix-select-viewport],
+[data-radix-popper-content-wrapper] [role="listbox"],
+[role="listbox"] {
+  background-color: hsl(0 0% 100%) !important;
+  background-color: var(--popover) !important;
+}
+
+/* Popovers (date pickers, command palettes, etc.) */
+[data-radix-popover-content],
+[data-radix-hover-card-content] {
+  background-color: hsl(0 0% 100%) !important;
+  background-color: var(--popover) !important;
+}
+
+/* Tooltips */
+[data-radix-tooltip-content] {
+  background-color: oklch(0.15 0.005 0) !important;
+  color: oklch(0.95 0.002 0) !important;
+}
+
+/* Combobox / Command menu */
+[cmdk-root],
+[cmdk-list] {
+  background-color: hsl(0 0% 100%) !important;
+  background-color: var(--popover) !important;
+}
+
+/* Catch-all: any element rendered inside a Radix popper wrapper */
+[data-radix-popper-content-wrapper] > * {
+  background-color: hsl(0 0% 100%) !important;
+  background-color: var(--popover) !important;
+}
+
+/* Dark-mode overrides — keep panels dark, not transparent */
+.dark [role="dialog"],
+.dark [data-radix-dialog-content],
+.dark [data-radix-alert-dialog-content],
+.dark [data-radix-dropdown-menu-content],
+.dark [data-radix-context-menu-content],
+.dark [data-radix-menubar-content],
+.dark [data-radix-navigation-menu-content],
+.dark [role="menu"],
+.dark [data-radix-select-content],
+.dark [data-radix-select-viewport],
+.dark [data-radix-popper-content-wrapper] [role="listbox"],
+.dark [role="listbox"],
+.dark [data-radix-popover-content],
+.dark [data-radix-hover-card-content],
+.dark [cmdk-root],
+.dark [cmdk-list],
+.dark [data-radix-popper-content-wrapper] > * {
+  background-color: oklch(0.15 0.005 0) !important;
+}
+
+/* Native select element */
 select {
   background-color: white;
   color: oklch(0.1 0.005 0);
-}
-
-/* Ensure all Select/Dropdown/Popover content has solid backgrounds */
-[data-radix-select-viewport] {
-  background-color: white;
-}
-
-.select-content-solid {
-  background-color: white !important;
 }
 
 /* Scrollbar styling */

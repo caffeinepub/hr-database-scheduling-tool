@@ -69,6 +69,14 @@ export interface Employee {
   'accountLevel' : EmployeeRole,
 }
 export type EmployeeId = string;
+export interface EmployeeOfTheMonthNomination {
+  'id' : string,
+  'submitterName' : [] | [string],
+  'nomineeEmployeeId' : EmployeeId,
+  'submitterPrincipal' : [] | [Principal],
+  'comment' : string,
+  'timestamp' : bigint,
+}
 export type EmployeeRole = { 'manager' : null } |
   { 'admin' : null } |
   { 'employee' : null };
@@ -294,16 +302,26 @@ export interface _SERVICE {
   'deleteManagerNote' : ActorMethod<[ManagerNoteId], undefined>,
   'deleteResource' : ActorMethod<[ResourceId], undefined>,
   'deleteShift' : ActorMethod<[ShiftId], undefined>,
+  'deleteTrainingRecord' : ActorMethod<[RecordId], undefined>,
   'getAllCategories' : ActorMethod<[], Array<InventoryCategory>>,
   'getAllDocuments' : ActorMethod<[], Array<Document>>,
+  'getAllEmployeeOfTheMonthNominations' : ActorMethod<
+    [],
+    Array<EmployeeOfTheMonthNomination>
+  >,
   'getAllEmployees' : ActorMethod<[], Array<Employee>>,
   'getAllHolidayRequests' : ActorMethod<[], Array<HolidayRequest>>,
+  'getAllItems' : ActorMethod<[], Array<InventoryItem>>,
   'getAllShifts' : ActorMethod<[], Array<Shift>>,
   'getAppraisalsByEmployee' : ActorMethod<[EmployeeId], Array<AppraisalRecord>>,
   'getBadges' : ActorMethod<[], Array<Badge>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getEmployee' : ActorMethod<[EmployeeId], [] | [Employee]>,
+  'getEmployeeOfTheMonthNominationsByEmployee' : ActorMethod<
+    [EmployeeId],
+    Array<EmployeeOfTheMonthNomination>
+  >,
   'getHolidayRequestsByEmployee' : ActorMethod<
     [EmployeeId],
     Array<HolidayRequest>
@@ -343,6 +361,10 @@ export interface _SERVICE {
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setApproval' : ActorMethod<[Principal, ApprovalStatus], undefined>,
   'setMonthWinner' : ActorMethod<[string, EmployeeId], undefined>,
+  'submitEmployeeOfTheMonthNomination' : ActorMethod<
+    [EmployeeId, string, [] | [string]],
+    string
+  >,
   'submitHolidayRequest' : ActorMethod<[HolidayRequest], undefined>,
   'submitNomination' : ActorMethod<[Nomination], undefined>,
   'updateAppraisalRecord' : ActorMethod<[AppraisalRecord], undefined>,
