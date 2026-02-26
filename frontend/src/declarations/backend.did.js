@@ -34,6 +34,21 @@ export const AppraisalRecord = IDL.Record({
   'notes' : IDL.Text,
   'isComplete' : IDL.Bool,
 });
+export const BadgeId = IDL.Text;
+export const Badge = IDL.Record({
+  'id' : BadgeId,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'description' : IDL.Text,
+  'category' : IDL.Text,
+  'iconKey' : IDL.Text,
+});
+export const CategoryId = IDL.Text;
+export const InventoryCategory = IDL.Record({
+  'categoryId' : CategoryId,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+});
 export const DocumentId = IDL.Text;
 export const DocumentCategory = IDL.Variant({
   'other' : IDL.Null,
@@ -67,6 +82,28 @@ export const Employee = IDL.Record({
   'department' : IDL.Text,
   'startDate' : IDL.Int,
   'accountLevel' : EmployeeRole,
+});
+export const InventoryItemId = IDL.Text;
+export const OrderStatus = IDL.Variant({
+  'ok' : IDL.Null,
+  'orderRequired' : IDL.Null,
+  'ordered' : IDL.Null,
+});
+export const InventoryItem = IDL.Record({
+  'categoryId' : CategoryId,
+  'itemId' : InventoryItemId,
+  'lastStocktakeBy' : IDL.Opt(IDL.Text),
+  'expectedDeliveryDate' : IDL.Opt(IDL.Int),
+  'orderStatus' : OrderStatus,
+  'supplier' : IDL.Text,
+  'expiryDate' : IDL.Opt(IDL.Int),
+  'name' : IDL.Text,
+  'size' : IDL.Opt(IDL.Text),
+  'currentStockCount' : IDL.Nat,
+  'lastStocktakeDate' : IDL.Opt(IDL.Int),
+  'minimumStockLevel' : IDL.Nat,
+  'price' : IDL.Opt(IDL.Float64),
+  'orderFrequency' : IDL.Text,
 });
 export const ManagerNoteId = IDL.Text;
 export const ManagerNoteType = IDL.Variant({
@@ -134,6 +171,15 @@ export const TrainingRecord = IDL.Record({
   'completionDate' : IDL.Opt(IDL.Int),
   'expiryDate' : IDL.Opt(IDL.Int),
   'description' : IDL.Text,
+  'employeeId' : EmployeeId,
+});
+export const StaffBadgeId = IDL.Text;
+export const StaffBadge = IDL.Record({
+  'id' : StaffBadgeId,
+  'assignedAt' : IDL.Int,
+  'assignedBy' : EmployeeId,
+  'note' : IDL.Opt(IDL.Text),
+  'badgeId' : BadgeId,
   'employeeId' : EmployeeId,
 });
 export const UserRole = IDL.Variant({
@@ -213,19 +259,25 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addAppraisalRecord' : IDL.Func([AppraisalRecord], [], []),
+  'addBadge' : IDL.Func([Badge], [], []),
+  'addCategory' : IDL.Func([InventoryCategory], [], []),
   'addDocument' : IDL.Func([Document], [], []),
   'addEmployee' : IDL.Func([Employee], [], []),
+  'addItem' : IDL.Func([InventoryItem], [], []),
   'addManagerNote' : IDL.Func([ManagerNote], [], []),
   'addResource' : IDL.Func([Resource], [], []),
   'addShift' : IDL.Func([Shift], [], []),
   'addShiftNote' : IDL.Func([ShiftNote], [], []),
   'addSicknessRecord' : IDL.Func([SicknessRecord], [], []),
   'addTrainingRecord' : IDL.Func([TrainingRecord], [], []),
+  'assignBadgeToStaff' : IDL.Func([StaffBadge], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteDocument' : IDL.Func([DocumentId], [], []),
+  'deleteItem' : IDL.Func([InventoryItemId], [], []),
   'deleteManagerNote' : IDL.Func([ManagerNoteId], [], []),
   'deleteResource' : IDL.Func([ResourceId], [], []),
   'deleteShift' : IDL.Func([ShiftId], [], []),
+  'getAllCategories' : IDL.Func([], [IDL.Vec(InventoryCategory)], ['query']),
   'getAllDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
   'getAllEmployees' : IDL.Func([], [IDL.Vec(Employee)], ['query']),
   'getAllHolidayRequests' : IDL.Func([], [IDL.Vec(HolidayRequest)], ['query']),
@@ -235,12 +287,18 @@ export const idlService = IDL.Service({
       [IDL.Vec(AppraisalRecord)],
       ['query'],
     ),
+  'getBadges' : IDL.Func([], [IDL.Vec(Badge)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getEmployee' : IDL.Func([EmployeeId], [IDL.Opt(Employee)], ['query']),
   'getHolidayRequestsByEmployee' : IDL.Func(
       [EmployeeId],
       [IDL.Vec(HolidayRequest)],
+      ['query'],
+    ),
+  'getItemsByCategory' : IDL.Func(
+      [CategoryId],
+      [IDL.Vec(InventoryItem)],
       ['query'],
     ),
   'getManagerNotesByEmployee' : IDL.Func(
@@ -265,6 +323,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(SicknessRecord)],
       ['query'],
     ),
+  'getStaffBadges' : IDL.Func([EmployeeId], [IDL.Vec(StaffBadge)], ['query']),
   'getTrainingRecordsByEmployee' : IDL.Func(
       [EmployeeId],
       [IDL.Vec(TrainingRecord)],
@@ -283,8 +342,11 @@ export const idlService = IDL.Service({
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerApproved' : IDL.Func([], [IDL.Bool], ['query']),
   'listApprovals' : IDL.Func([], [IDL.Vec(UserApprovalInfo)], ['query']),
+  'markAdminLoggedInSuccessfully' : IDL.Func([], [IDL.Bool], []),
   'markWinnerBonus' : IDL.Func([IDL.Text], [], []),
+  'removeBadgeFromStaff' : IDL.Func([StaffBadgeId], [], []),
   'requestApproval' : IDL.Func([], [], []),
+  'resetAdminLoginCheck' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
   'setMonthWinner' : IDL.Func([IDL.Text, EmployeeId], [], []),
@@ -298,6 +360,7 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'updateItem' : IDL.Func([InventoryItem], [], []),
   'updateManagerNote' : IDL.Func([ManagerNote], [], []),
   'updateResource' : IDL.Func([Resource], [], []),
   'updateShift' : IDL.Func([Shift], [], []),
@@ -333,6 +396,21 @@ export const idlFactory = ({ IDL }) => {
     'notes' : IDL.Text,
     'isComplete' : IDL.Bool,
   });
+  const BadgeId = IDL.Text;
+  const Badge = IDL.Record({
+    'id' : BadgeId,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'description' : IDL.Text,
+    'category' : IDL.Text,
+    'iconKey' : IDL.Text,
+  });
+  const CategoryId = IDL.Text;
+  const InventoryCategory = IDL.Record({
+    'categoryId' : CategoryId,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+  });
   const DocumentId = IDL.Text;
   const DocumentCategory = IDL.Variant({
     'other' : IDL.Null,
@@ -366,6 +444,28 @@ export const idlFactory = ({ IDL }) => {
     'department' : IDL.Text,
     'startDate' : IDL.Int,
     'accountLevel' : EmployeeRole,
+  });
+  const InventoryItemId = IDL.Text;
+  const OrderStatus = IDL.Variant({
+    'ok' : IDL.Null,
+    'orderRequired' : IDL.Null,
+    'ordered' : IDL.Null,
+  });
+  const InventoryItem = IDL.Record({
+    'categoryId' : CategoryId,
+    'itemId' : InventoryItemId,
+    'lastStocktakeBy' : IDL.Opt(IDL.Text),
+    'expectedDeliveryDate' : IDL.Opt(IDL.Int),
+    'orderStatus' : OrderStatus,
+    'supplier' : IDL.Text,
+    'expiryDate' : IDL.Opt(IDL.Int),
+    'name' : IDL.Text,
+    'size' : IDL.Opt(IDL.Text),
+    'currentStockCount' : IDL.Nat,
+    'lastStocktakeDate' : IDL.Opt(IDL.Int),
+    'minimumStockLevel' : IDL.Nat,
+    'price' : IDL.Opt(IDL.Float64),
+    'orderFrequency' : IDL.Text,
   });
   const ManagerNoteId = IDL.Text;
   const ManagerNoteType = IDL.Variant({
@@ -433,6 +533,15 @@ export const idlFactory = ({ IDL }) => {
     'completionDate' : IDL.Opt(IDL.Int),
     'expiryDate' : IDL.Opt(IDL.Int),
     'description' : IDL.Text,
+    'employeeId' : EmployeeId,
+  });
+  const StaffBadgeId = IDL.Text;
+  const StaffBadge = IDL.Record({
+    'id' : StaffBadgeId,
+    'assignedAt' : IDL.Int,
+    'assignedBy' : EmployeeId,
+    'note' : IDL.Opt(IDL.Text),
+    'badgeId' : BadgeId,
     'employeeId' : EmployeeId,
   });
   const UserRole = IDL.Variant({
@@ -512,19 +621,25 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addAppraisalRecord' : IDL.Func([AppraisalRecord], [], []),
+    'addBadge' : IDL.Func([Badge], [], []),
+    'addCategory' : IDL.Func([InventoryCategory], [], []),
     'addDocument' : IDL.Func([Document], [], []),
     'addEmployee' : IDL.Func([Employee], [], []),
+    'addItem' : IDL.Func([InventoryItem], [], []),
     'addManagerNote' : IDL.Func([ManagerNote], [], []),
     'addResource' : IDL.Func([Resource], [], []),
     'addShift' : IDL.Func([Shift], [], []),
     'addShiftNote' : IDL.Func([ShiftNote], [], []),
     'addSicknessRecord' : IDL.Func([SicknessRecord], [], []),
     'addTrainingRecord' : IDL.Func([TrainingRecord], [], []),
+    'assignBadgeToStaff' : IDL.Func([StaffBadge], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteDocument' : IDL.Func([DocumentId], [], []),
+    'deleteItem' : IDL.Func([InventoryItemId], [], []),
     'deleteManagerNote' : IDL.Func([ManagerNoteId], [], []),
     'deleteResource' : IDL.Func([ResourceId], [], []),
     'deleteShift' : IDL.Func([ShiftId], [], []),
+    'getAllCategories' : IDL.Func([], [IDL.Vec(InventoryCategory)], ['query']),
     'getAllDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
     'getAllEmployees' : IDL.Func([], [IDL.Vec(Employee)], ['query']),
     'getAllHolidayRequests' : IDL.Func(
@@ -538,12 +653,18 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(AppraisalRecord)],
         ['query'],
       ),
+    'getBadges' : IDL.Func([], [IDL.Vec(Badge)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getEmployee' : IDL.Func([EmployeeId], [IDL.Opt(Employee)], ['query']),
     'getHolidayRequestsByEmployee' : IDL.Func(
         [EmployeeId],
         [IDL.Vec(HolidayRequest)],
+        ['query'],
+      ),
+    'getItemsByCategory' : IDL.Func(
+        [CategoryId],
+        [IDL.Vec(InventoryItem)],
         ['query'],
       ),
     'getManagerNotesByEmployee' : IDL.Func(
@@ -572,6 +693,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(SicknessRecord)],
         ['query'],
       ),
+    'getStaffBadges' : IDL.Func([EmployeeId], [IDL.Vec(StaffBadge)], ['query']),
     'getTrainingRecordsByEmployee' : IDL.Func(
         [EmployeeId],
         [IDL.Vec(TrainingRecord)],
@@ -590,8 +712,11 @@ export const idlFactory = ({ IDL }) => {
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerApproved' : IDL.Func([], [IDL.Bool], ['query']),
     'listApprovals' : IDL.Func([], [IDL.Vec(UserApprovalInfo)], ['query']),
+    'markAdminLoggedInSuccessfully' : IDL.Func([], [IDL.Bool], []),
     'markWinnerBonus' : IDL.Func([IDL.Text], [], []),
+    'removeBadgeFromStaff' : IDL.Func([StaffBadgeId], [], []),
     'requestApproval' : IDL.Func([], [], []),
+    'resetAdminLoginCheck' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
     'setMonthWinner' : IDL.Func([IDL.Text, EmployeeId], [], []),
@@ -605,6 +730,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'updateItem' : IDL.Func([InventoryItem], [], []),
     'updateManagerNote' : IDL.Func([ManagerNote], [], []),
     'updateResource' : IDL.Func([Resource], [], []),
     'updateShift' : IDL.Func([Shift], [], []),

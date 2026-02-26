@@ -1,24 +1,24 @@
-import React, { useState } from "react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-import { UserRole } from "../../backend";
+import React, { useState } from 'react';
+import Sidebar from './Sidebar';
+import Header from './Header';
+import { UserRole } from '../../backend';
 
 type Page =
-  | "dashboard"
-  | "employees"
-  | "employee-profile"
-  | "scheduling"
-  | "portal"
-  | "stock-requests"
-  | "inventory"
-  | "eom"
-  | "appraisals"
-  | "training-summary"
-  | "holiday-stats"
-  | "payroll-export"
-  | "approval-queue"
-  | "documents"
-  | "resources";
+  | 'dashboard'
+  | 'employees'
+  | 'employee-profile'
+  | 'scheduling'
+  | 'portal'
+  | 'stock-requests'
+  | 'inventory'
+  | 'eom'
+  | 'appraisals'
+  | 'training-summary'
+  | 'holiday-stats'
+  | 'payroll-export'
+  | 'approval-queue'
+  | 'documents'
+  | 'resources';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -26,31 +26,31 @@ interface MainLayoutProps {
   navigate: (page: Page, employeeId?: string) => void;
   isAdmin: boolean;
   userRole?: UserRole;
+  userName?: string;
 }
 
-export default function MainLayout({ children, currentPage, navigate, isAdmin, userRole }: MainLayoutProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+export default function MainLayout({
+  children,
+  currentPage,
+  navigate,
+  isAdmin,
+  userRole,
+  userName,
+}: MainLayoutProps) {
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex min-h-screen" style={{ backgroundColor: 'oklch(0.97 0.002 0)' }}>
       <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         currentPage={currentPage}
-        navigate={navigate}
+        onNavigate={(page) => navigate(page as Page)}
         isAdmin={isAdmin}
-        userRole={userRole}
       />
-      <div
-        className="flex flex-col flex-1 min-w-0 transition-all duration-300"
-        style={{ marginLeft: 0 }}
-      >
+      <div className="flex-1 flex flex-col min-w-0">
         <Header
-          navigate={navigate}
+          userName={userName}
           isAdmin={isAdmin}
-          userRole={userRole}
+          currentPage={currentPage}
         />
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>
       </div>

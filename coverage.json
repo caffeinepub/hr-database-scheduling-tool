@@ -1,276 +1,116 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T14:45:24.063Z",
+  "generatedAt": "2026-02-26T18:54:25.218Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 16,
-    "implemented": 16,
+    "total": 6,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Apply a Black, Red & White company colour scheme consistently across the entire application — backgrounds, navigation, buttons, badges, and typography — replacing any existing colour tokens with this palette.",
+        "summary": "Restyle the entire application with a bold red, white, and black colour scheme that fits an Escape Room brand. Replace the current plain monochrome palette with a rich theme: use deep/vivid reds as primary accent colours, clean white for content surfaces, and black/near-black for backgrounds and sidebars. Apply this consistently across the header, sidebar, navigation items, buttons, badges, stat cards, page backgrounds, tables, and form controls. Typography and iconography should also reflect this palette. The result should feel immersive and on-brand — energetic but readable.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/index.css",
           "frontend/tailwind.config.js",
-          "frontend/src/components/layout/Header.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/pages/LoginPage.tsx"
-        ],
-        "matchedFiles": [
           "frontend/src/index.css",
-          "frontend/tailwind.config.js",
+          "frontend/src/components/layout/Sidebar.tsx",
           "frontend/src/components/layout/Header.tsx",
+          "frontend/src/pages/DashboardPage.tsx",
+          "frontend/src/pages/EmployeesPage.tsx",
+          "frontend/src/pages/EmployeeProfilePage.tsx",
+          "frontend/src/pages/SchedulingPage.tsx",
+          "frontend/src/pages/CompanyDocumentsPage.tsx",
+          "frontend/src/pages/EmployeePortalPage.tsx",
+          "frontend/src/components/employees/EmployeeTable.tsx",
+          "frontend/src/components/scheduling/ShiftCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/tailwind.config.js",
+          "frontend/src/index.css",
           "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/pages/LoginPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-10",
-        "summary": "Provide a Payroll CSV export feature. Export options must include: current week (Thu–Wed), 2-week period (Thu–Wed), and custom date range. The export must differentiate worked hours, paid time off, unpaid time off, sickness, and holiday.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/PayrollExportPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/PayrollExportPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ]
-      },
-      {
-        "id": "REQ-11",
-        "summary": "Allow assignment of training or knowledge records to staff members so it is easy to see which employees can run which experience. Training records should be visible on each employee profile.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/profile/AddTrainingModal.tsx",
-          "frontend/src/components/profile/TrainingTab.tsx",
-          "frontend/src/pages/TrainingSummaryPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/profile/TrainingTab.tsx",
-          "frontend/src/pages/TrainingSummaryPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ]
-      },
-      {
-        "id": "REQ-12",
-        "summary": "Build an Appraisals section linked to employee profiles. Each appraisal record must store the date completed and notes. The next appraisal due date defaults to 3 months after the most recent completed appraisal. Admin and Management can add and edit appraisal records.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/profile/AppraisalsTab.tsx",
-          "frontend/src/components/profile/AddAppraisalModal.tsx",
-          "frontend/src/pages/AppraisalsDashboardPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/AppraisalsDashboardPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ]
-      },
-      {
-        "id": "REQ-13",
-        "summary": "Build a Stock Request system. The request form must include fields: Item name, Experience or Building (dropdown with the 23 specified options), Quantity, and a free-text Comment. Submitted requests appear on a dashboard with three sections: Requested, Ordered, and Delivered. Users can drag items between sections or change status via a dropdown/button.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/StockRequestsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/StockRequestsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-14",
-        "summary": "Build an Inventory Management section for food & drink stock. Maintain a central master stock list and individual stock levels for three locations: Bar, FEC Cafe, and Battle Masters. When stock at an individual location is updated, the central total updates automatically. Each location's stock entry must support an expiry date field.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/InventoryManagementPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/InventoryManagementPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-15",
-        "summary": "Build an Employee of the Month section. Any employee can submit a recommendation (nominee name and reason). Submissions are visible only to Admin. Admin can declare a winner and mark that the £50 bonus has been noted/awarded.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/EmployeeOfMonthPage.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-16",
-        "summary": "Add a navigation item for Stock Control (containing Stock Requests and Inventory Management sub-sections) in the sidebar, visible to all logged-in approved users. Ensure the sidebar navigation is complete, correctly structured, and does not overlap page content.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/layout/Sidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/layout/Sidebar.tsx"
+          "frontend/src/components/layout/Header.tsx",
+          "frontend/src/pages/EmployeeProfilePage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Fix the sidebar so it does not overlap or cover the main content area. The sidebar must either sit beside the content correctly or include a collapse/minimise toggle so users can hide it.",
+        "summary": "Fix all dropdown and select menus so their background is a solid colour rather than transparent. Dropdowns (e.g. role selects, category filters, date pickers, status selects in forms and tables) must display an opaque background that matches the updated theme — either white/off-white for light surfaces or the dark background for dark surfaces. The dropdown must be fully readable regardless of what is rendered behind it.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/components/layout/MainLayout.tsx",
-          "frontend/src/components/layout/Layout.tsx"
+          "frontend/src/index.css",
+          "frontend/src/components/employees/AddEmployeeModal.tsx",
+          "frontend/src/components/employees/EditEmployeeModal.tsx",
+          "frontend/src/components/profile/AddTrainingModal.tsx",
+          "frontend/src/components/profile/EditTrainingModal.tsx",
+          "frontend/src/components/profile/AddAppraisalModal.tsx",
+          "frontend/src/components/profile/AddManagerNoteModal.tsx",
+          "frontend/src/components/profile/EditManagerNoteModal.tsx",
+          "frontend/src/components/profile/ManagerNotesTab.tsx",
+          "frontend/src/components/documents/AddDocumentModal.tsx",
+          "frontend/src/components/documents/EditDocumentModal.tsx",
+          "frontend/src/components/resources/AddResourceModal.tsx",
+          "frontend/src/components/resources/EditResourceModal.tsx",
+          "frontend/src/components/scheduling/AddShiftModal.tsx",
+          "frontend/src/components/scheduling/EditShiftModal.tsx",
+          "frontend/src/pages/EmployeeOfMonthPage.tsx",
+          "frontend/src/pages/HolidayStatisticsPage.tsx",
+          "frontend/src/pages/PayrollExportPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/components/layout/MainLayout.tsx",
-          "frontend/src/components/layout/Layout.tsx"
+          "frontend/src/index.css",
+          "frontend/src/components/profile/ManagerNotesTab.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Implement a simple username/password login system. Seed a single initial Admin account with username 'Admin' and password 'MagnumSal123'. All other users register via Internet Identity and must be approved by Admin before accessing the dashboard.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/PendingApprovalPage.tsx",
-          "frontend/src/pages/AdminApprovalQueuePage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Layout.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/PendingApprovalPage.tsx",
-          "frontend/src/pages/AdminApprovalQueuePage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Layout.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ]
+        "summary": "Add a gamification badge system to the backend. Define a `Badge` type with fields: id (Text), name (Text), description (Text), category (Text — e.g. 'Attendance', 'Performance', 'Experience', 'Customer', 'Team'), iconKey (Text — a key referencing a frontend icon/emoji), and createdAt (Int). Define a `StaffBadge` type representing an assignment with fields: id (Text), employeeId (Text), badgeId (Text), assignedBy (Text — manager's employeeId), assignedAt (Int), and note (opt Text). Store badges in a stable `HashMap<Text, Badge>` and staff badge assignments in a stable `HashMap<Text, StaffBadge>`. Seed a set of initial badges appropriate for an Escape Room Company (see REQ-4 for the badge list). Expose backend methods: `getBadges() → async [Badge]`, `addBadge(badge: Badge) → async Result`, `getStaffBadges(employeeId: Text) → async [StaffBadge]`, `assignBadgeToStaff(assignment: StaffBadge) → async Result` (manager/admin only), `removeBadgeFromStaff(assignmentId: Text) → async Result` (manager/admin only).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-4",
-        "summary": "Implement four account privilege levels: Team Member, Supervisor, Management, and Admin. Admin can assign or change any user's privilege level. Supervisors and Management can create/edit shifts and approve holiday/time-off requests. Team Members can only view their own data.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/EmployeeProfilePage.tsx",
-          "frontend/src/pages/SchedulingPage.tsx",
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/EmployeeProfilePage.tsx",
-          "frontend/src/pages/SchedulingPage.tsx",
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/components/layout/Sidebar.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ]
+        "summary": "Seed the following themed badges appropriate for The Panic Room (Escape Rooms, birthday parties, axe throwing, laser tag, TV Game Show Experiences). Each badge should have a name, short description, category, and an emoji iconKey. Include at minimum: **Attendance & Reliability** — 'Perfect Attendance' (zero absences in a period), 'Early Bird' (consistently early to shifts), 'Reliable Hero' (never missed a shift); **Performance & Reviews** — 'Five Star Review' (received an outstanding customer review), 'Crowd Favourite' (multiple positive feedback submissions), 'Top Performer' (excellent appraisal score); **Experience-Specific** — 'Escape Master' (specialist in escape room experiences), 'Party Starter' (exceptional birthday party host), 'Axe Legend' (top-rated axe throwing guide), 'Laser Commander' (laser tag expert), 'Game Show Star' (TV Game Show experience specialist); **Team & Culture** — 'Team Player' (recognised by peers for collaboration), 'Mentorship Badge' (helped train a new team member), 'Going the Extra Mile' (above-and-beyond effort recognised by a manager); **Milestones** — '1 Year Anniversary', '3 Year Anniversary', '5 Year Anniversary'.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-5",
-        "summary": "Build a Staff Dashboard listing all employees (visible to Admin, Management, Supervisors). Each employee profile must store: full name, email, job role, wage, phone number, address, training log, and a manager-only internal notes section that is hidden from the employee.",
+        "summary": "Add a 'Badges' tab to the Employee Profile page (`EmployeeProfilePage.tsx`). This tab should display all badges currently assigned to the employee as visual badge cards — each showing the badge emoji, name, description, category colour chip, date assigned, assigning manager's name, and optional note. When the viewer is a manager or admin, show an 'Assign Badge' button that opens a modal (`AssignBadgeModal`) allowing them to select a badge from the full badge list (grouped by category), optionally add a note, and confirm the assignment. Managers/admins should also be able to remove an assigned badge via a remove button on each badge card. Use the new React Query hooks for `getStaffBadges` and `assignBadgeToStaff` and `removeBadgeFromStaff`. Style badge cards using the red/white/black theme with category-coloured accents.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/EmployeeProfilePage.tsx",
-          "frontend/src/components/employees/EditEmployeeModal.tsx",
-          "frontend/src/components/profile/ManagerNotesTab.tsx"
+          "frontend/src/components/profile/BadgesTab.tsx",
+          "frontend/src/components/profile/AssignBadgeModal.tsx",
+          "frontend/src/pages/EmployeeProfilePage.tsx"
         ],
         "matchedFiles": [
+          "frontend/src/components/profile/BadgesTab.tsx",
+          "frontend/src/components/profile/AssignBadgeModal.tsx",
           "frontend/src/pages/EmployeeProfilePage.tsx"
         ]
       },
       {
         "id": "REQ-6",
-        "summary": "Build a Rota & Scheduling section with a 7-day calendar view running Thursday to Wednesday. Shifts must be fully editable: start/end times, date, location, and notes. Support scheduling paid time off, unpaid time off, and sickness on the calendar. Show a day view and a week view.",
+        "summary": "Add React Query hooks for the new badge endpoints in `useQueries.ts`: `useGetBadges()` (fetches all badge definitions), `useGetStaffBadges(employeeId)` (fetches badge assignments for a specific employee), `useAssignBadgeToStaff()` (mutation), and `useRemoveBadgeFromStaff()` (mutation). Invalidate the staff badges query on successful assign or remove.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/scheduling/WeeklyCalendar.tsx",
-          "frontend/src/pages/SchedulingPage.tsx",
-          "frontend/src/components/scheduling/AddShiftModal.tsx",
-          "frontend/src/components/scheduling/EditShiftModal.tsx",
-          "frontend/src/components/scheduling/ShiftCard.tsx"
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/SchedulingPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Allow employees to submit requests for paid or unpaid time off from their portal. Requests must be visible in a queue where only Supervisors or Management (and Admin) can approve or reject them. Include holiday and sickness statistics visible to Supervisors and Management.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/pages/HolidayStatisticsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/pages/HolidayStatisticsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/Sidebar.tsx"
-        ]
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Allow employees to set their availability: preferred working days, days unavailable, preferred hours per week, or open availability. This availability is visible to Supervisors and Management when scheduling.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/pages/SchedulingPage.tsx",
-          "frontend/src/components/employees/EditEmployeeModal.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/pages/SchedulingPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-9",
-        "summary": "Employees can only view their own assigned shifts in the Employee Portal. They cannot see other employees' shift data, names, or schedules.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/EmployeePortalPage.tsx",
-          "frontend/src/components/scheduling/WeeklyCalendar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/EmployeePortalPage.tsx"
+          "frontend/src/hooks/useQueries.ts"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/user-approval/approval.mo",
+    "backend/migration.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
@@ -279,33 +119,16 @@
     "frontend/src/backend.ts",
     "frontend/src/components/auth/ProfileSetupModal.tsx",
     "frontend/src/components/layout/Header.tsx",
-    "frontend/src/components/layout/Layout.tsx",
     "frontend/src/components/layout/MainLayout.tsx",
     "frontend/src/components/layout/Sidebar.tsx",
-    "frontend/src/components/profile/EditTrainingModal.tsx",
-    "frontend/src/components/profile/TrainingTab.tsx",
+    "frontend/src/components/profile/AssignBadgeModal.tsx",
+    "frontend/src/components/profile/BadgesTab.tsx",
+    "frontend/src/components/profile/ManagerNotesTab.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
     "frontend/src/index.css",
-    "frontend/src/lib/utils.ts",
-    "frontend/src/pages/AdminApprovalQueuePage.tsx",
-    "frontend/src/pages/AppraisalsDashboardPage.tsx",
-    "frontend/src/pages/DashboardPage.tsx",
-    "frontend/src/pages/DocumentsPage.tsx",
-    "frontend/src/pages/EmployeePortalPage.tsx",
     "frontend/src/pages/EmployeeProfilePage.tsx",
-    "frontend/src/pages/EmployeesPage.tsx",
-    "frontend/src/pages/HolidayStatisticsPage.tsx",
-    "frontend/src/pages/InventoryManagementPage.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/pages/PayrollExportPage.tsx",
-    "frontend/src/pages/PendingApprovalPage.tsx",
-    "frontend/src/pages/ResourcesPage.tsx",
-    "frontend/src/pages/SchedulingPage.tsx",
-    "frontend/src/pages/SecureResourcesPage.tsx",
-    "frontend/src/pages/StockRequestsPage.tsx",
-    "frontend/src/pages/TrainingSummaryPage.tsx",
     "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",

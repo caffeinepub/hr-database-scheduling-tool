@@ -24,6 +24,16 @@ export type AppraisalType = { 'annual' : null } |
 export type ApprovalStatus = { 'pending' : null } |
   { 'approved' : null } |
   { 'rejected' : null };
+export interface Badge {
+  'id' : BadgeId,
+  'name' : string,
+  'createdAt' : bigint,
+  'description' : string,
+  'category' : string,
+  'iconKey' : string,
+}
+export type BadgeId = string;
+export type CategoryId = string;
 export interface Document {
   'id' : DocumentId,
   'title' : string,
@@ -68,6 +78,28 @@ export type HolidayRequestId = string;
 export type HolidayRequestStatus = { 'pending' : null } |
   { 'approved' : null } |
   { 'declined' : null };
+export interface InventoryCategory {
+  'categoryId' : CategoryId,
+  'name' : string,
+  'description' : string,
+}
+export interface InventoryItem {
+  'categoryId' : CategoryId,
+  'itemId' : InventoryItemId,
+  'lastStocktakeBy' : [] | [string],
+  'expectedDeliveryDate' : [] | [bigint],
+  'orderStatus' : OrderStatus,
+  'supplier' : string,
+  'expiryDate' : [] | [bigint],
+  'name' : string,
+  'size' : [] | [string],
+  'currentStockCount' : bigint,
+  'lastStocktakeDate' : [] | [bigint],
+  'minimumStockLevel' : bigint,
+  'price' : [] | [number],
+  'orderFrequency' : string,
+}
+export type InventoryItemId = string;
 export interface ManagerNote {
   'id' : ManagerNoteId,
   'content' : string,
@@ -95,6 +127,9 @@ export interface NominationWinner {
   'hasReceivedBonus' : boolean,
   'employeeId' : EmployeeId,
 }
+export type OrderStatus = { 'ok' : null } |
+  { 'orderRequired' : null } |
+  { 'ordered' : null };
 export type RecordId = string;
 export interface Resource {
   'id' : ResourceId,
@@ -133,6 +168,15 @@ export interface SicknessRecord {
   'returnNote' : string,
   'reason' : string,
 }
+export interface StaffBadge {
+  'id' : StaffBadgeId,
+  'assignedAt' : bigint,
+  'assignedBy' : EmployeeId,
+  'note' : [] | [string],
+  'badgeId' : BadgeId,
+  'employeeId' : EmployeeId,
+}
+export type StaffBadgeId = string;
 export interface TrainingRecord {
   'id' : RecordId,
   'status' : TrainingStatus,
@@ -185,24 +229,31 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addAppraisalRecord' : ActorMethod<[AppraisalRecord], undefined>,
+  'addBadge' : ActorMethod<[Badge], undefined>,
+  'addCategory' : ActorMethod<[InventoryCategory], undefined>,
   'addDocument' : ActorMethod<[Document], undefined>,
   'addEmployee' : ActorMethod<[Employee], undefined>,
+  'addItem' : ActorMethod<[InventoryItem], undefined>,
   'addManagerNote' : ActorMethod<[ManagerNote], undefined>,
   'addResource' : ActorMethod<[Resource], undefined>,
   'addShift' : ActorMethod<[Shift], undefined>,
   'addShiftNote' : ActorMethod<[ShiftNote], undefined>,
   'addSicknessRecord' : ActorMethod<[SicknessRecord], undefined>,
   'addTrainingRecord' : ActorMethod<[TrainingRecord], undefined>,
+  'assignBadgeToStaff' : ActorMethod<[StaffBadge], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteDocument' : ActorMethod<[DocumentId], undefined>,
+  'deleteItem' : ActorMethod<[InventoryItemId], undefined>,
   'deleteManagerNote' : ActorMethod<[ManagerNoteId], undefined>,
   'deleteResource' : ActorMethod<[ResourceId], undefined>,
   'deleteShift' : ActorMethod<[ShiftId], undefined>,
+  'getAllCategories' : ActorMethod<[], Array<InventoryCategory>>,
   'getAllDocuments' : ActorMethod<[], Array<Document>>,
   'getAllEmployees' : ActorMethod<[], Array<Employee>>,
   'getAllHolidayRequests' : ActorMethod<[], Array<HolidayRequest>>,
   'getAllShifts' : ActorMethod<[], Array<Shift>>,
   'getAppraisalsByEmployee' : ActorMethod<[EmployeeId], Array<AppraisalRecord>>,
+  'getBadges' : ActorMethod<[], Array<Badge>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getEmployee' : ActorMethod<[EmployeeId], [] | [Employee]>,
@@ -210,6 +261,7 @@ export interface _SERVICE {
     [EmployeeId],
     Array<HolidayRequest>
   >,
+  'getItemsByCategory' : ActorMethod<[CategoryId], Array<InventoryItem>>,
   'getManagerNotesByEmployee' : ActorMethod<[EmployeeId], Array<ManagerNote>>,
   'getNominationsByMonth' : ActorMethod<[string], Array<Nomination>>,
   'getResources' : ActorMethod<[[] | [ResourceCategory]], Array<Resource>>,
@@ -219,6 +271,7 @@ export interface _SERVICE {
     [EmployeeId],
     Array<SicknessRecord>
   >,
+  'getStaffBadges' : ActorMethod<[EmployeeId], Array<StaffBadge>>,
   'getTrainingRecordsByEmployee' : ActorMethod<
     [EmployeeId],
     Array<TrainingRecord>
@@ -228,8 +281,11 @@ export interface _SERVICE {
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerApproved' : ActorMethod<[], boolean>,
   'listApprovals' : ActorMethod<[], Array<UserApprovalInfo>>,
+  'markAdminLoggedInSuccessfully' : ActorMethod<[], boolean>,
   'markWinnerBonus' : ActorMethod<[string], undefined>,
+  'removeBadgeFromStaff' : ActorMethod<[StaffBadgeId], undefined>,
   'requestApproval' : ActorMethod<[], undefined>,
+  'resetAdminLoginCheck' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setApproval' : ActorMethod<[Principal, ApprovalStatus], undefined>,
   'setMonthWinner' : ActorMethod<[string, EmployeeId], undefined>,
@@ -242,6 +298,7 @@ export interface _SERVICE {
     [HolidayRequestId, HolidayRequestStatus],
     undefined
   >,
+  'updateItem' : ActorMethod<[InventoryItem], undefined>,
   'updateManagerNote' : ActorMethod<[ManagerNote], undefined>,
   'updateResource' : ActorMethod<[Resource], undefined>,
   'updateShift' : ActorMethod<[Shift], undefined>,

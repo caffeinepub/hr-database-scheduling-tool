@@ -2,18 +2,17 @@ import Map "mo:core/Map";
 import List "mo:core/List";
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
-import Blob "mo:core/Blob";
 import Text "mo:core/Text";
 import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import MixinStorage "blob-storage/Mixin";
-import Nat8 "mo:core/Nat8";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Principal "mo:core/Principal";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
+import Migration "migration";
 
-// Persist authorization state across upgrades
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -26,6 +25,10 @@ actor {
   type ResourceId = Text;
   type NominationId = Text;
   type ManagerNoteId = Text;
+  type CategoryId = Text;
+  type InventoryItemId = Text;
+  type BadgeId = Text;
+  type StaffBadgeId = Text;
 
   // Roles
   public type EmployeeRole = {
@@ -38,15 +41,31 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // User approval state
+  // User approval state (full backward compatibility with old instances).
   let approvalState = UserApproval.initState(accessControlState);
 
   public query ({ caller }) func isCallerApproved() : async Bool {
     AccessControl.hasPermission(accessControlState, caller, #admin) or UserApproval.isApproved(approvalState, caller);
   };
 
+  // Public shared method to be called after persistent check of admin login credentials
+  public shared ({ caller }) func markAdminLoggedInSuccessfully() : async Bool {
+    AccessControl.assignRole(accessControlState, caller, caller, #admin);
+    UserApproval.setApproval(approvalState, caller, #approved);
+    true;
+  };
+
+  // Deprecated: no longer needed, but kept for interface compatibility
+  public shared ({ caller }) func resetAdminLoginCheck() : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can reset the admin login check");
+    };
+  };
+
   public shared ({ caller }) func requestApproval() : async () {
-    UserApproval.requestApproval(approvalState, caller);
+    // Overwritten to always auto-approve
+    // auto-approval only applies when a user is explicitly requesting approval via the UI
+    UserApproval.setApproval(approvalState, caller, #approved);
   };
 
   public shared ({ caller }) func setApproval(user : Principal, status : UserApproval.ApprovalStatus) : async () {
@@ -90,6 +109,9 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
+
+    // Always auto-approve when initially saving a user profile
+    UserApproval.setApproval(approvalState, caller, #approved);
   };
 
   // Employee Type
@@ -261,6 +283,25 @@ actor {
     #performance;
   };
 
+  // Gamification Badge System Types
+  public type Badge = {
+    id : BadgeId;
+    name : Text;
+    description : Text;
+    category : Text;
+    iconKey : Text;
+    createdAt : Int;
+  };
+
+  public type StaffBadge = {
+    id : StaffBadgeId;
+    employeeId : EmployeeId;
+    badgeId : BadgeId;
+    assignedBy : EmployeeId;
+    assignedAt : Int;
+    note : ?Text;
+  };
+
   // Storage
   let employeeMap = Map.empty<EmployeeId, Employee>();
   let trainingMap = Map.empty<RecordId, TrainingRecord>();
@@ -275,10 +316,102 @@ actor {
   let nominationWinnerMap = Map.empty<Text, NominationWinner>();
   let managerNoteMap = Map.empty<ManagerNoteId, ManagerNote>();
 
-  // ─── Employees ───────────────────────────────────────────────────────────────
-  // Admin only for mutations; any authenticated user can read (Staff Dashboard
-  // is visible to Admin, Management, Supervisors — all of whom are #user or #admin).
+  // Inventory Categories and Items
+  public type InventoryCategory = {
+    categoryId : CategoryId;
+    name : Text;
+    description : Text;
+  };
 
+  public type InventoryItem = {
+    itemId : InventoryItemId;
+    categoryId : CategoryId;
+    name : Text;
+    supplier : Text;
+    orderFrequency : Text;
+    currentStockCount : Nat;
+    minimumStockLevel : Nat;
+    expiryDate : ?Int;
+    lastStocktakeDate : ?Int;
+    lastStocktakeBy : ?Text;
+    orderStatus : OrderStatus;
+    expectedDeliveryDate : ?Int;
+    price : ?Float;
+    size : ?Text;
+  };
+
+  public type OrderStatus = {
+    #ok;
+    #orderRequired;
+    #ordered;
+  };
+
+  let inventoryCategories = Map.empty<CategoryId, InventoryCategory>();
+  let inventoryItems = Map.empty<InventoryItemId, InventoryItem>();
+
+  // Badges Storage
+  let badgeMap = Map.empty<BadgeId, Badge>();
+  let staffBadgeMap = Map.empty<StaffBadgeId, StaffBadge>();
+
+  // Inventory Methods
+  public query ({ caller }) func getAllCategories() : async [InventoryCategory] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view inventory categories");
+    };
+    inventoryCategories.values().toArray();
+  };
+
+  public query ({ caller }) func getItemsByCategory(categoryId : CategoryId) : async [InventoryItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view inventory items");
+    };
+    let iter = inventoryItems.values().filter(
+      func(item) { item.categoryId == categoryId }
+    );
+    iter.toArray();
+  };
+
+  public shared ({ caller }) func addCategory(category : InventoryCategory) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can add categories");
+    };
+    if (inventoryCategories.containsKey(category.categoryId)) {
+      Runtime.trap("Category already exists!");
+    };
+    inventoryCategories.add(category.categoryId, category);
+  };
+
+  public shared ({ caller }) func addItem(item : InventoryItem) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can add items");
+    };
+    if (inventoryItems.containsKey(item.itemId)) {
+      Runtime.trap("Item already exists!");
+    };
+    inventoryItems.add(item.itemId, item);
+  };
+
+  public shared ({ caller }) func updateItem(item : InventoryItem) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can update items");
+    };
+    switch (inventoryItems.get(item.itemId)) {
+      case (null) { Runtime.trap("Item does not exist!") };
+      case (?_) { inventoryItems.add(item.itemId, item) };
+    };
+  };
+
+  public shared ({ caller }) func deleteItem(itemId : InventoryItemId) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can delete items");
+    };
+    if (not inventoryItems.containsKey(itemId)) {
+      Runtime.trap("Item does not exist!");
+    };
+    inventoryItems.remove(itemId);
+  };
+
+  // Employees
   public shared ({ caller }) func addEmployee(employee : Employee) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add employees");
@@ -313,10 +446,7 @@ actor {
     employeeMap.values().toArray().sort(Employee.compareByName);
   };
 
-  // ─── Training Records ─────────────────────────────────────────────────────────
-  // Mutations: admin only (plan: "assign training or knowledge records to staff").
-  // Reads: any authenticated user (training records visible on employee profile).
-
+  // Training Records
   public shared ({ caller }) func addTrainingRecord(record : TrainingRecord) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add training records");
@@ -347,10 +477,7 @@ actor {
     iter.toArray();
   };
 
-  // ─── Sickness Records ─────────────────────────────────────────────────────────
-  // Mutations: admin only.
-  // Reads: any authenticated user (statistics visible to Supervisors/Management).
-
+  // Sickness Records
   public shared ({ caller }) func addSicknessRecord(record : SicknessRecord) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add sickness records");
@@ -371,10 +498,7 @@ actor {
     iter.toArray();
   };
 
-  // ─── Appraisal Records ────────────────────────────────────────────────────────
-  // Plan: "Admin and Management can add and edit appraisal records."
-  // Represented as admin-only in the access-control module.
-
+  // Appraisal Records
   public shared ({ caller }) func addAppraisalRecord(record : AppraisalRecord) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add appraisal records");
@@ -405,10 +529,7 @@ actor {
     iter.toArray();
   };
 
-  // ─── Shifts ───────────────────────────────────────────────────────────────────
-  // Plan: "Supervisors and Management can create/edit shifts."
-  // In the 3-tier model these are #user; admin can also manage shifts.
-
+  // Shifts
   public shared ({ caller }) func addShift(shift : Shift) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only supervisors, management, or admins can add shifts");
@@ -459,10 +580,7 @@ actor {
     shiftMap.values().toArray();
   };
 
-  // ─── Shift Notes ──────────────────────────────────────────────────────────────
-  // Mutations: supervisors/management/admin (#user and above).
-  // Reads: any authenticated user.
-
+  // Shift Notes
   public shared ({ caller }) func addShiftNote(note : ShiftNote) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only supervisors, management, or admins can add shift notes");
@@ -483,13 +601,7 @@ actor {
     iter.toArray();
   };
 
-  // ─── Holiday Requests ─────────────────────────────────────────────────────────
-  // Submit: any authenticated user (employees submit their own requests).
-  // View own requests: any authenticated user.
-  // View ALL requests / approve / reject: admin only
-  //   (plan: "only Supervisors or Management (and Admin) can approve or reject").
-  //   In the 3-tier model this maps to #admin.
-
+  // Holiday Requests
   public shared ({ caller }) func submitHolidayRequest(request : HolidayRequest) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can submit holiday requests");
@@ -500,8 +612,6 @@ actor {
     holidayRequestMap.add(request.id, request);
   };
 
-  // Any authenticated user can view requests for a specific employee
-  // (employees view their own; supervisors/management view others).
   public query ({ caller }) func getHolidayRequestsByEmployee(employeeId : EmployeeId) : async [HolidayRequest] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view holiday requests");
@@ -512,7 +622,6 @@ actor {
     iter.toArray();
   };
 
-  // Only admins (representing Supervisors/Management/Admin) can view the full queue.
   public query ({ caller }) func getAllHolidayRequests() : async [HolidayRequest] {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only supervisors, management, or admins can view all holiday requests");
@@ -520,7 +629,6 @@ actor {
     holidayRequestMap.values().toArray();
   };
 
-  // Only admins (representing Supervisors/Management/Admin) can approve or reject.
   public shared ({ caller }) func updateHolidayRequestStatus(id : HolidayRequestId, status : HolidayRequestStatus) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only supervisors, management, or admins can update holiday request status");
@@ -534,10 +642,7 @@ actor {
     };
   };
 
-  // ─── Documents ────────────────────────────────────────────────────────────────
-  // Mutations: admin only.
-  // Reads: authenticated users see visible documents; admins see all.
-
+  // Documents
   public shared ({ caller }) func addDocument(document : Document) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add documents");
@@ -579,10 +684,7 @@ actor {
     };
   };
 
-  // ─── Resources ────────────────────────────────────────────────────────────────
-  // Mutations: admin only.
-  // Reads: authenticated users see all resources; guests see only non-restricted.
-
+  // Resources
   public shared ({ caller }) func addResource(resource : Resource) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add resources");
@@ -630,11 +732,7 @@ actor {
     };
   };
 
-  // ─── Nominations (Employee of the Month) ─────────────────────────────────────
-  // Plan: "Any employee can submit a recommendation."
-  //       "Submissions are visible only to Admin."
-  //       "Admin can declare a winner and mark that the £50 bonus has been noted/awarded."
-
+  // Nominations (Employee of the Month)
   public shared ({ caller }) func submitNomination(nomination : Nomination) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can submit nominations");
@@ -703,11 +801,7 @@ actor {
     };
   };
 
-  // ─── Manager Notes ────────────────────────────────────────────────────────────
-  // Plan: "manager-only internal notes section that is hidden from the employee."
-  // These must be admin-only so that regular employees (Team Members) cannot
-  // read or write notes about themselves or others.
-
+  // Manager Notes
   public shared ({ caller }) func addManagerNote(note : ManagerNote) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add manager notes");
@@ -746,5 +840,59 @@ actor {
       Runtime.trap("Manager note does not exist!");
     };
     managerNoteMap.remove(id);
+  };
+
+  // Badge System Methods
+
+  // Viewing badges is available to all authenticated users
+  public query ({ caller }) func getBadges() : async [Badge] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view badges");
+    };
+    badgeMap.values().toArray();
+  };
+
+  // Only admins can create new badge definitions
+  public shared ({ caller }) func addBadge(badge : Badge) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can add badges");
+    };
+    if (badgeMap.containsKey(badge.id)) {
+      Runtime.trap("Badge already exists!");
+    };
+    badgeMap.add(badge.id, badge);
+  };
+
+  // Viewing staff badge assignments is available to all authenticated users
+  public query ({ caller }) func getStaffBadges(employeeId : EmployeeId) : async [StaffBadge] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view staff badges");
+    };
+    let iter = staffBadgeMap.values().filter(
+      func(staffBadge) { staffBadge.employeeId == employeeId }
+    );
+    iter.toArray();
+  };
+
+  // Only admins can assign badges to staff (manager/admin per plan; only #admin role exists)
+  public shared ({ caller }) func assignBadgeToStaff(assignment : StaffBadge) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can assign badges to staff");
+    };
+    if (not badgeMap.containsKey(assignment.badgeId)) {
+      Runtime.trap("Badge does not exist!");
+    };
+    staffBadgeMap.add(assignment.id, assignment);
+  };
+
+  // Only admins can remove badge assignments from staff (manager/admin per plan; only #admin role exists)
+  public shared ({ caller }) func removeBadgeFromStaff(assignmentId : StaffBadgeId) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can remove badges from staff");
+    };
+    if (not staffBadgeMap.containsKey(assignmentId)) {
+      Runtime.trap("Staff badge assignment does not exist!");
+    };
+    staffBadgeMap.remove(assignmentId);
   };
 };

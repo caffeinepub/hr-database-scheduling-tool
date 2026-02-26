@@ -1,44 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap');
-
 @layer base {
   :root {
-    --background: oklch(0.08 0 0);
-    --foreground: oklch(0.97 0 0);
-    --card: oklch(0.12 0 0);
-    --card-foreground: oklch(0.97 0 0);
-    --popover: oklch(0.12 0 0);
-    --popover-foreground: oklch(0.97 0 0);
-    --primary: oklch(0.55 0.22 25);
-    --primary-foreground: oklch(0.97 0 0);
-    --secondary: oklch(0.18 0 0);
-    --secondary-foreground: oklch(0.97 0 0);
-    --muted: oklch(0.18 0 0);
-    --muted-foreground: oklch(0.65 0 0);
-    --accent: oklch(0.55 0.22 25);
-    --accent-foreground: oklch(0.97 0 0);
-    --destructive: oklch(0.50 0.22 25);
-    --destructive-foreground: oklch(0.97 0 0);
-    --border: oklch(0.22 0 0);
-    --input: oklch(0.18 0 0);
-    --ring: oklch(0.55 0.22 25);
+    /* Red/White/Black Escape Room Theme */
+    --background: oklch(0.98 0.002 0);
+    --foreground: oklch(0.1 0.005 0);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.1 0.005 0);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.1 0.005 0);
+
+    --primary: oklch(0.48 0.22 27);
+    --primary-foreground: oklch(1 0 0);
+
+    --secondary: oklch(0.15 0.005 0);
+    --secondary-foreground: oklch(0.98 0.002 0);
+
+    --muted: oklch(0.94 0.003 0);
+    --muted-foreground: oklch(0.45 0.005 0);
+
+    --accent: oklch(0.55 0.22 27);
+    --accent-foreground: oklch(1 0 0);
+
+    --destructive: oklch(0.48 0.22 27);
+    --destructive-foreground: oklch(1 0 0);
+
+    --border: oklch(0.88 0.003 0);
+    --input: oklch(0.88 0.003 0);
+    --ring: oklch(0.48 0.22 27);
+
     --radius: 0.5rem;
-    --sidebar-background: oklch(0.06 0 0);
-    --sidebar-foreground: oklch(0.85 0 0);
-    --sidebar-primary: oklch(0.55 0.22 25);
-    --sidebar-primary-foreground: oklch(0.97 0 0);
-    --sidebar-accent: oklch(0.15 0 0);
-    --sidebar-accent-foreground: oklch(0.97 0 0);
-    --sidebar-border: oklch(0.18 0 0);
-    --sidebar-ring: oklch(0.55 0.22 25);
-    --chart-1: oklch(0.55 0.22 25);
-    --chart-2: oklch(0.65 0.15 25);
-    --chart-3: oklch(0.75 0.08 25);
-    --chart-4: oklch(0.45 0.18 25);
-    --chart-5: oklch(0.35 0.12 25);
+
+    /* Sidebar */
+    --sidebar-background: oklch(0.1 0.005 0);
+    --sidebar-foreground: oklch(0.92 0.003 0);
+    --sidebar-primary: oklch(0.55 0.22 27);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.18 0.005 0);
+    --sidebar-accent-foreground: oklch(0.92 0.003 0);
+    --sidebar-border: oklch(0.2 0.005 0);
+    --sidebar-ring: oklch(0.55 0.22 27);
+
+    /* Chart colors */
+    --chart-1: oklch(0.48 0.22 27);
+    --chart-2: oklch(0.35 0.005 0);
+    --chart-3: oklch(0.6 0.18 27);
+    --chart-4: oklch(0.7 0.12 27);
+    --chart-5: oklch(0.55 0.005 0);
+  }
+
+  .dark {
+    --background: oklch(0.1 0.005 0);
+    --foreground: oklch(0.95 0.002 0);
+
+    --card: oklch(0.15 0.005 0);
+    --card-foreground: oklch(0.95 0.002 0);
+
+    --popover: oklch(0.15 0.005 0);
+    --popover-foreground: oklch(0.95 0.002 0);
+
+    --primary: oklch(0.55 0.22 27);
+    --primary-foreground: oklch(1 0 0);
+
+    --secondary: oklch(0.2 0.005 0);
+    --secondary-foreground: oklch(0.95 0.002 0);
+
+    --muted: oklch(0.2 0.005 0);
+    --muted-foreground: oklch(0.6 0.005 0);
+
+    --accent: oklch(0.55 0.22 27);
+    --accent-foreground: oklch(1 0 0);
+
+    --destructive: oklch(0.55 0.22 27);
+    --destructive-foreground: oklch(1 0 0);
+
+    --border: oklch(0.25 0.005 0);
+    --input: oklch(0.25 0.005 0);
+    --ring: oklch(0.55 0.22 27);
+
+    --sidebar-background: oklch(0.08 0.005 0);
+    --sidebar-foreground: oklch(0.92 0.003 0);
+    --sidebar-primary: oklch(0.55 0.22 27);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.15 0.005 0);
+    --sidebar-accent-foreground: oklch(0.92 0.003 0);
+    --sidebar-border: oklch(0.18 0.005 0);
+    --sidebar-ring: oklch(0.55 0.22 27);
   }
 }
 
@@ -51,24 +104,44 @@
     font-family: 'Inter', sans-serif;
   }
   h1, h2, h3 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
+    font-family: 'Bebas Neue', 'Inter', sans-serif;
+    letter-spacing: 0.04em;
   }
 }
 
-@layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: oklch(0.22 0 0) transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: oklch(0.22 0 0);
-    border-radius: 3px;
-  }
+/* Fix transparent dropdowns globally */
+[data-radix-select-content],
+[data-radix-popper-content-wrapper] [role="listbox"],
+[role="listbox"] {
+  background-color: white !important;
+}
+
+select {
+  background-color: white;
+  color: oklch(0.1 0.005 0);
+}
+
+/* Ensure all Select/Dropdown/Popover content has solid backgrounds */
+[data-radix-select-viewport] {
+  background-color: white;
+}
+
+.select-content-solid {
+  background-color: white !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(0.94 0.003 0);
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.48 0.22 27);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.4 0.22 27);
 }

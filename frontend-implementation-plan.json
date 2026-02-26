@@ -1,502 +1,228 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Magnum HR Dashboard — Frontend Implementation",
+  "title": "UI colour overhaul (red/white/black theme + dropdown fix) & staff gamification badges",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Apply Black, Red & White company colour scheme consistently across the entire application",
+      "summary": "Restyle the entire application with a bold red, white, and black colour scheme that fits an Escape Room brand",
       "acceptanceCriteria": [
-        "Primary background is black or near-black",
-        "Accent/action colour is red",
-        "Text and contrast elements use white",
-        "No blue, purple, or other off-brand colours appear in the UI"
+        "Red is used as the primary accent across buttons, active nav items, badges, and key UI highlights",
+        "The sidebar and header use a dark black or near-black background with white/red text and icons",
+        "Content areas (cards, tables, modals) use white or off-white backgrounds with dark text for readability",
+        "All pages are visually consistent — no page retains the old plain white/black-only look",
+        "Text contrast meets readability standards on all coloured backgrounds"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Replace all existing color token definitions with Black, Red & White palette. Set --background to near-black (#0a0a0a or oklch(0.1 0 0)), --primary to red (oklch(0.55 0.25 25)), --accent to red, --foreground to white, --destructive to red variant, and remove any blue/purple tokens. Ensure all semantic tokens (card, popover, muted, border) use only black, red, white shades."
-        },
-        {
           "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Update the extended color palette to enforce Black, Red & White only. Replace any blue, purple, or off-brand hues in the colors object. Ensure sidebar, chart, and all semantic color extensions use only black (oklch dark values), red (oklch mid-lightness high chroma at hue ~25), and white (oklch near 1.0)."
+          "description": "Update the color palette in the Tailwind configuration to define red, white, and black as the primary theme colors. Replace existing CSS variable references with oklch values for vivid red (primary accent), pure white (content surfaces), and near-black (backgrounds/sidebars). Ensure all color tokens (background, foreground, primary, secondary, accent, muted, destructive, border, input, ring, card, popover) are redefined to use the red/white/black scheme."
         },
         {
-          "path": "frontend/src/components/layout/Header.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Update header background and text colors to match the Black, Red & White scheme. Use black or near-black background, white text, and red accent for the logout button or active states."
+          "description": "Update CSS custom properties in :root to implement the red/white/black color scheme using oklch values. Define --background as near-black, --foreground as white, --primary as vivid red, --card as white, --sidebar-background as black, --header-background as near-black. Ensure all custom properties support the Escape Room brand aesthetic with high contrast and readability."
         },
         {
           "path": "frontend/src/components/layout/Sidebar.tsx",
           "operation": "modify",
-          "description": "Apply Black, Red & White palette to the sidebar. Use black background, white text for links, and red for active/hover states. Remove any blue or purple styling."
+          "description": "Apply the new red/white/black theme to the sidebar component. Update background colors to use black/near-black, text colors to white, and active navigation items to show red accents. Ensure icon colors match the theme and hover states use red highlights. Update className props to reference the new Tailwind color tokens."
         },
         {
-          "path": "frontend/src/pages/LoginPage.tsx",
+          "path": "frontend/src/components/layout/Header.tsx",
           "operation": "modify",
-          "description": "Update login page styling to use Black, Red & White palette. Apply black background, white text, and red accent for the sign-in button."
+          "description": "Apply the red/white/black theme to the header component. Use near-black background, white text for app title and user name, and red accents for interactive elements. Update the logout button to use red as the primary action color. Ensure all text is legible against the dark background."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "modify",
+          "description": "Update the dashboard page to use the new color scheme. Apply white backgrounds to stat cards with red accent borders or highlights for key metrics. Use black text on white cards for readability. Update button styles to use red as the primary action color. Ensure the page feels energetic and on-brand."
+        },
+        {
+          "path": "frontend/src/pages/EmployeesPage.tsx",
+          "operation": "modify",
+          "description": "Apply the red/white/black theme to the employees page. Update table backgrounds to white, headers to near-black with white text, and action buttons to red. Ensure role badges use the theme colors and search/filter controls have consistent styling."
+        },
+        {
+          "path": "frontend/src/pages/EmployeeProfilePage.tsx",
+          "operation": "modify",
+          "description": "Update the employee profile page with the new theme. Apply white card backgrounds, red tab highlights for active tabs, and ensure all buttons use red as the primary color. Update the profile header section to use theme-consistent colors."
+        },
+        {
+          "path": "frontend/src/pages/SchedulingPage.tsx",
+          "operation": "modify",
+          "description": "Apply the red/white/black theme to the scheduling page. Update the weekly calendar grid with white backgrounds for shift cards, red accents for today's date, and black borders. Ensure all shift detail modals use the new color scheme."
+        },
+        {
+          "path": "frontend/src/pages/CompanyDocumentsPage.tsx",
+          "operation": "modify",
+          "description": "Update the documents page to use the new color scheme. Apply white card backgrounds for document listings, red accents for action buttons, and black text for readability. Ensure category badges use theme-appropriate colors."
+        },
+        {
+          "path": "frontend/src/pages/EmployeePortalPage.tsx",
+          "operation": "modify",
+          "description": "Apply the red/white/black theme to the employee portal. Update shift cards, holiday request forms, and status badges to use the new palette. Ensure white backgrounds for content areas and red highlights for interactive elements."
+        },
+        {
+          "path": "frontend/src/components/employees/EmployeeTable.tsx",
+          "operation": "modify",
+          "description": "Update the employee table component to use white backgrounds with black text, red action buttons, and theme-consistent status badges. Ensure table headers use near-black backgrounds with white text."
+        },
+        {
+          "path": "frontend/src/components/scheduling/ShiftCard.tsx",
+          "operation": "modify",
+          "description": "Apply the red/white/black theme to shift cards. Use white card backgrounds with red accent borders or department color highlights that complement the main theme. Ensure text remains legible and action buttons use red."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Fix sidebar layout so it does not overlap main content and include a collapse/minimise toggle",
+      "summary": "Fix all dropdown and select menus so their background is a solid colour rather than transparent",
       "acceptanceCriteria": [
-        "Main content is never obscured by the sidebar",
-        "Sidebar and content area share the available width correctly",
-        "A collapse/minimise toggle is available",
-        "Layout is responsive and stable on standard desktop widths"
+        "Every select/dropdown in the app shows a fully opaque, solid-colour background when opened",
+        "No dropdown appears transparent or see-through over page content",
+        "Dropdown option text is legible against the solid background",
+        "Fix applies to all pages including forms, filters, modals, and table controls"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add state for collapsed/expanded sidebar. Implement a toggle button (icon: ChevronLeft/ChevronRight or Menu) at the top of the sidebar. When collapsed, show only icons; when expanded, show full labels. Apply appropriate width classes (e.g., w-16 collapsed, w-64 expanded) and smooth transition animations."
+          "description": "Add global CSS rules for all select elements and dropdown components to enforce solid, opaque backgrounds. Target select elements, popover menus, and dropdown content with explicit background-color declarations using the theme's white or near-black values. Add rules like 'select { background-color: white; }' and '.popover-content { background-color: white; }' to ensure no transparency."
         },
         {
-          "path": "frontend/src/components/layout/MainLayout.tsx",
+          "path": "frontend/src/components/employees/AddEmployeeModal.tsx",
           "operation": "modify",
-          "description": "Refactor layout to use CSS Grid or Flexbox so sidebar and main content sit side by side without overlap. Ensure the main content area adjusts its width dynamically based on sidebar collapsed/expanded state. Use margin-left or grid-template-columns to allocate space correctly."
+          "description": "Ensure all Select components in the add employee modal have solid white backgrounds. Add explicit className or style props to enforce opaque backgrounds on the role select dropdown and any other select controls."
         },
         {
-          "path": "frontend/src/components/layout/Layout.tsx",
+          "path": "frontend/src/components/employees/EditEmployeeModal.tsx",
           "operation": "modify",
-          "description": "Ensure the authenticated layout wrapper correctly positions the sidebar and main content area without overlap. Verify that the sidebar state (collapsed/expanded) is preserved and passed to child components if needed."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Implement username/password login for Admin and Internet Identity approval flow for other users",
-      "acceptanceCriteria": [
-        "Admin can log in with username 'Admin' and password 'MagnumSal123'",
-        "New employee accounts appear in a pending approval queue visible to Admin",
-        "Unapproved accounts see a holding page after login",
-        "Admin can approve or reject pending accounts"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/LoginPage.tsx",
-          "operation": "modify",
-          "description": "Add a username/password form for Admin login alongside the existing Internet Identity button. On form submit, validate credentials (username='Admin', password='MagnumSal123') client-side, then log in via Internet Identity as normal but flag the session as Admin. Show error toast for invalid credentials. Non-admin users continue using Internet Identity only."
+          "description": "Ensure all Select components in the edit employee modal have solid white backgrounds. Apply the same fix as AddEmployeeModal to role and status selects."
         },
         {
-          "path": "frontend/src/pages/PendingApprovalPage.tsx",
-          "operation": "create",
-          "description": "Create a holding page for unapproved users. Display a friendly message: 'Your account is pending approval. An administrator will review your request soon.' Show a logout button. Use the isCallerApproved query to determine when to show this page."
+          "path": "frontend/src/components/profile/AddTrainingModal.tsx",
+          "operation": "modify",
+          "description": "Fix the training status select dropdown to have a solid white background. Ensure the dropdown is fully opaque when opened and options are readable."
         },
         {
-          "path": "frontend/src/pages/AdminApprovalQueuePage.tsx",
-          "operation": "create",
-          "description": "Create an admin-only page that lists all pending user approvals via listApprovals query. Display each user's principal and status. Provide Approve/Reject buttons that call setApproval mutation with appropriate status. Show toast notifications on success or error. Guard the page with isCallerAdmin check."
+          "path": "frontend/src/components/profile/EditTrainingModal.tsx",
+          "operation": "modify",
+          "description": "Fix the training status select dropdown to have a solid white background, matching the AddTrainingModal fix."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/profile/AddAppraisalModal.tsx",
           "operation": "modify",
-          "description": "Register routes for /pending-approval and /admin/approval-queue. Add route guards: redirect unapproved non-admin users to /pending-approval after login, and restrict /admin/approval-queue to admins only."
+          "description": "Ensure the appraisal type select dropdown has a solid white background and is fully opaque."
         },
         {
-          "path": "frontend/src/components/layout/Layout.tsx",
+          "path": "frontend/src/components/profile/AddManagerNoteModal.tsx",
           "operation": "modify",
-          "description": "After authentication check, query isCallerApproved. If the user is not approved and not admin, redirect to /pending-approval instead of the main app. Admins bypass this check."
+          "description": "Fix the note type select dropdown to have a solid white background."
         },
         {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
+          "path": "frontend/src/components/profile/EditManagerNoteModal.tsx",
           "operation": "modify",
-          "description": "Add a navigation link to 'Approval Queue' visible only to admin users. Link to /admin/approval-queue."
+          "description": "Fix the note type select dropdown to have a solid white background."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/profile/ManagerNotesTab.tsx",
           "operation": "modify",
-          "description": "Add query hooks for isCallerApproved, listApprovals, and mutation hooks for requestApproval and setApproval to support the approval workflow."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Implement four privilege levels and role-based UI controls for creating/editing shifts and approving requests",
-      "acceptanceCriteria": [
-        "Four distinct roles exist: Team Member, Supervisor, Management, Admin",
-        "Admin can change any user's role from the employee profile",
-        "Supervisors and Management can create, edit, and delete shifts for all employees",
-        "Supervisors and Management can approve or reject holiday/time-off requests",
-        "Team Members cannot see other employees' shift data"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/EmployeeProfilePage.tsx",
-          "operation": "modify",
-          "description": "Add a role assignment section visible only to Admin users. Display the current employee role (Team Member, Supervisor, Management, Admin) and provide a dropdown or radio buttons to change it. On save, call assignCallerUserRole mutation with the selected role."
+          "description": "Fix the note type filter select dropdown to have a solid white background."
         },
         {
-          "path": "frontend/src/pages/SchedulingPage.tsx",
+          "path": "frontend/src/components/documents/AddDocumentModal.tsx",
           "operation": "modify",
-          "description": "Guard shift creation, edit, and delete actions so only Supervisors, Management, and Admin can perform them. Hide or disable these buttons for Team Members. Use getCallerUserRole query to determine access."
+          "description": "Ensure the document category select dropdown has a solid white background."
         },
         {
-          "path": "frontend/src/pages/EmployeePortalPage.tsx",
+          "path": "frontend/src/components/documents/EditDocumentModal.tsx",
           "operation": "modify",
-          "description": "Show holiday request approval buttons only to Supervisors, Management, and Admin. Team Members can submit requests but not approve/decline them. Use role check to conditionally render the approval controls."
+          "description": "Ensure the document category select dropdown has a solid white background."
         },
         {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
+          "path": "frontend/src/components/resources/AddResourceModal.tsx",
           "operation": "modify",
-          "description": "Conditionally show navigation links based on user role. For example, 'All Shifts' and 'All Employees' are visible to Supervisors, Management, and Admin, but hidden from Team Members."
+          "description": "Fix the resource category select dropdown to have a solid white background."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/resources/EditResourceModal.tsx",
           "operation": "modify",
-          "description": "Add query hook for getCallerUserRole and mutation hook for assignCallerUserRole to support role management throughout the UI."
+          "description": "Fix the resource category select dropdown to have a solid white background."
+        },
+        {
+          "path": "frontend/src/components/scheduling/AddShiftModal.tsx",
+          "operation": "modify",
+          "description": "Ensure all select dropdowns (shift type, employee assignment) in the add shift modal have solid white backgrounds."
+        },
+        {
+          "path": "frontend/src/components/scheduling/EditShiftModal.tsx",
+          "operation": "modify",
+          "description": "Ensure all select dropdowns in the edit shift modal have solid white backgrounds."
+        },
+        {
+          "path": "frontend/src/pages/EmployeeOfMonthPage.tsx",
+          "operation": "modify",
+          "description": "Fix the month select dropdown to have a solid white background."
+        },
+        {
+          "path": "frontend/src/pages/HolidayStatisticsPage.tsx",
+          "operation": "modify",
+          "description": "Fix any status filter dropdowns to have solid white backgrounds."
+        },
+        {
+          "path": "frontend/src/pages/PayrollExportPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the date range select dropdown has a solid white background."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Build Staff Dashboard with employee profiles storing name, email, job role, wage, phone, address, training log, and manager-only notes",
+      "summary": "Add a 'Badges' tab to the Employee Profile page displaying all assigned badges with manager/admin assignment and removal capabilities",
       "acceptanceCriteria": [
-        "Employee profile displays name, email, job role, wage, phone, address",
-        "Training log is accessible from the profile",
-        "Manager notes section is visible only to Supervisor, Management, and Admin",
-        "Employees viewing their own profile do not see the manager notes section"
+        "A 'Badges' tab appears on the Employee Profile page alongside existing tabs",
+        "Assigned badges render as styled cards with emoji, name, description, category, assigned date, assigning manager, and note",
+        "Managers and admins see an 'Assign Badge' button; regular employees do not",
+        "The assign badge modal shows all available badges grouped by category with a search or scroll",
+        "Assigning a badge updates the display immediately via React Query cache invalidation",
+        "Managers/admins can remove an assigned badge; removal is reflected immediately",
+        "Badge cards are styled consistently with the red/white/black colour theme"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/components/profile/BadgesTab.tsx",
+          "operation": "create",
+          "description": "Create a new BadgesTab component that displays all badges assigned to the employee. Fetch staff badges using the useGetStaffBadges hook and render each as a styled card showing the badge emoji (iconKey), name, description, category chip with color coding, assigned date (formatted), assigning manager's name (resolved from employee list), and optional note. Use the useIsCallerAdmin hook or role check to conditionally show an 'Assign Badge' button for managers/admins. Each badge card should include a remove button (visible only to managers/admins) that calls the useRemoveBadgeFromStaff mutation. Style cards with white backgrounds, red accent borders, and black text consistent with the theme. Display a loading skeleton while fetching and an empty state message if no badges are assigned."
+        },
+        {
+          "path": "frontend/src/components/profile/AssignBadgeModal.tsx",
+          "operation": "create",
+          "description": "Create an AssignBadgeModal component that allows managers/admins to assign a badge to an employee. Fetch all available badges using the useGetBadges hook and display them grouped by category (Attendance, Performance, Experience, Team, Milestones). Each badge should show its emoji, name, and description. Include a search/filter input to narrow the badge list. Provide an optional note textarea for the manager to add context. On submit, call the useAssignBadgeToStaff mutation with a new StaffBadge object containing id (generated), employeeId (from props), badgeId (selected badge), assignedBy (current user's employeeId from profile), assignedAt (current timestamp), and note (optional). Invalidate the staff badges query on success and close the modal. Style consistently with the red/white/black theme using Dialog, ScrollArea, and Input components from shadcn/ui."
+        },
+        {
           "path": "frontend/src/pages/EmployeeProfilePage.tsx",
           "operation": "modify",
-          "description": "Expand the profile view to display all required fields: name, email, job role, wage, phone, address. Ensure the training log tab is already present. Add conditional rendering for the ManagerNotesTab: show it only if the viewer is Supervisor, Management, or Admin, and hide it from the employee viewing their own profile."
-        },
-        {
-          "path": "frontend/src/components/employees/EditEmployeeModal.tsx",
-          "operation": "modify",
-          "description": "Add form fields for wage, phone, and address (if not already present). Ensure all employee details can be edited by Admin or Management. Validate phone and email formats before submission."
-        },
-        {
-          "path": "frontend/src/components/profile/ManagerNotesTab.tsx",
-          "operation": "modify",
-          "description": "Verify that the manager notes tab is correctly gated. Only Supervisor, Management, and Admin should see this tab. Employees viewing their own profile must not see it. Use role and employeeId checks to enforce this."
+          "description": "Add a 'Badges' tab to the existing tabs array in the EmployeeProfilePage component. Import and render the BadgesTab component when the badges tab is active. Ensure the tab label uses the same styling as existing tabs (Training, Sickness, Appraisals, Manager Notes) with red accent for the active state. Pass the employeeId prop to BadgesTab so it can fetch the correct staff badges."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Build Rota & Scheduling section with Thursday-to-Wednesday calendar, fully editable shifts, and support for paid/unpaid time off and sickness",
+      "summary": "Add React Query hooks for the new badge endpoints",
       "acceptanceCriteria": [
-        "Calendar always starts on Thursday and ends on Wednesday",
-        "Week view and day view are both available",
-        "Each shift can have notes and a location set",
-        "Shift start time, end time, and date are all editable",
-        "Paid time off, unpaid time off, and sickness can be added to the calendar",
-        "Supervisors and Management can create and edit shifts"
+        "useGetBadges hook fetches all available badges from the backend",
+        "useGetStaffBadges(employeeId) fetches assignments for the specified employee",
+        "useAssignBadgeToStaff mutation calls the assignBadgeToStaff backend method",
+        "useRemoveBadgeFromStaff mutation calls the removeBadgeFromStaff backend method",
+        "Successful assign/remove mutations invalidate the staff badges query for the affected employee"
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/components/scheduling/WeeklyCalendar.tsx",
-          "operation": "modify",
-          "description": "Refactor the calendar to always start on Thursday and end on Wednesday. Adjust the date range calculation logic to find the most recent Thursday and display the next 7 days (Thu-Wed). Update column headers to reflect this custom week structure."
-        },
-        {
-          "path": "frontend/src/pages/SchedulingPage.tsx",
-          "operation": "modify",
-          "description": "Add a view toggle (Week View / Day View) at the top of the page. In Day View, show a single day's shifts with more detail. In Week View, show the WeeklyCalendar. Ensure only Supervisors, Management, and Admin can add or edit shifts."
-        },
-        {
-          "path": "frontend/src/components/scheduling/AddShiftModal.tsx",
-          "operation": "modify",
-          "description": "Add optional fields for shift location (text input) and shift notes (textarea). Allow selection of shift type: Regular Shift, Paid Time Off, Unpaid Time Off, or Sickness. Adjust form labels and validation accordingly."
-        },
-        {
-          "path": "frontend/src/components/scheduling/EditShiftModal.tsx",
-          "operation": "modify",
-          "description": "Ensure all shift fields are editable: date, start time, end time, department, assigned employees, location, and notes. Allow changing the shift type (regular, paid leave, unpaid leave, sickness). Since backend has no updateShift, create a new shift with updated values (as currently implemented)."
-        },
-        {
-          "path": "frontend/src/components/scheduling/ShiftCard.tsx",
-          "operation": "modify",
-          "description": "Display shift location and notes on the card if present. Show a visual indicator (icon or badge) for shift types: paid leave, unpaid leave, sickness. Ensure the card is styled consistently with the Black, Red & White palette."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Allow employees to submit time-off requests and provide an approval queue for Supervisors and Management with holiday/sickness statistics",
-      "acceptanceCriteria": [
-        "Employees can submit paid or unpaid time-off requests from the Employee Portal",
-        "Pending requests appear in an approval queue for Supervisors/Management/Admin",
-        "Supervisors and Management can approve or reject requests",
-        "Holiday and sickness statistics (totals, trends) are visible to Supervisors and Management"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/EmployeePortalPage.tsx",
-          "operation": "modify",
-          "description": "Expand the holiday request form to allow selection of request type: Paid Time Off or Unpaid Time Off. Display the employee's submitted requests with their status (pending, approved, declined). Show approval/decline buttons only to Supervisors, Management, and Admin. Use updateHolidayRequestStatus mutation to approve or decline."
-        },
-        {
-          "path": "frontend/src/pages/HolidayStatisticsPage.tsx",
-          "operation": "create",
-          "description": "Create a page displaying holiday and sickness statistics. Show total days taken, pending requests, and trends over time for all employees. Use getAllHolidayRequests and getSicknessRecordsByEmployee queries to aggregate data. Restrict access to Supervisors, Management, and Admin using AccessDeniedScreen."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register route for /holiday-statistics. Guard it so only Supervisors, Management, and Admin can access."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a navigation link to 'Holiday Statistics' visible only to Supervisors, Management, and Admin. Link to /holiday-statistics."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Allow employees to set availability (preferred days, hours, or open availability) visible to Supervisors and Management",
-      "acceptanceCriteria": [
-        "Employees can set availability (days available, days off, preferred hours or open availability) from their portal",
-        "Availability data is visible to Supervisors and Management in the scheduling view"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/EmployeePortalPage.tsx",
-          "operation": "modify",
-          "description": "Add an 'Availability Preferences' section where employees can set their availability. Include checkboxes for days of the week (available/unavailable), a number input for preferred hours per week, and a checkbox for 'Open Availability'. Store this data in the employee's profile (may require extending UserProfile or Employee type with availability fields)."
-        },
-        {
-          "path": "frontend/src/pages/SchedulingPage.tsx",
-          "operation": "modify",
-          "description": "Add an 'Availability' view or panel that lists all employees and their availability preferences. Display days available, preferred hours, and open availability status. Allow Supervisors and Management to filter or search by availability when creating shifts."
-        },
-        {
-          "path": "frontend/src/components/employees/EditEmployeeModal.tsx",
-          "operation": "modify",
-          "description": "Add fields to the employee edit form for setting availability preferences: days available (multi-select), preferred hours per week (number), and open availability (checkbox). This allows admins to manage availability on behalf of employees."
-        }
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "summary": "Ensure employees can only view their own assigned shifts in the Employee Portal",
-      "acceptanceCriteria": [
-        "The Employee Portal shift view only returns shifts assigned to the logged-in employee",
-        "No UI element exposes other employees' shift details to a Team Member account"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/EmployeePortalPage.tsx",
-          "operation": "modify",
-          "description": "Filter the shifts displayed to only those assigned to the logged-in employee. Use getShiftsByEmployee query with the current user's employeeId. Ensure no UI elements (links, cards, modals) expose other employees' shift data to Team Members."
-        },
-        {
-          "path": "frontend/src/components/scheduling/WeeklyCalendar.tsx",
-          "operation": "modify",
-          "description": "If the calendar is accessible to Team Members (unlikely, but if so), filter shifts to show only those assigned to the logged-in employee. Otherwise, ensure the SchedulingPage itself is restricted to Supervisors, Management, and Admin."
-        }
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "summary": "Provide Payroll CSV export with current week, 2-week, or custom date range options differentiating worked hours, paid leave, unpaid leave, sickness, and holiday",
-      "acceptanceCriteria": [
-        "Export button is accessible to Admin and Management",
-        "User can select: current week, 2-week period (Thu–Wed), or custom date range",
-        "Downloaded CSV includes columns differentiating worked hours, paid leave, unpaid leave, sickness, and holiday",
-        "Each row corresponds to one employee"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/PayrollExportPage.tsx",
-          "operation": "create",
-          "description": "Create a page with a form to select export period: 'Current Week (Thu-Wed)', '2-Week Period (Thu-Wed)', or 'Custom Date Range'. On submit, fetch all shifts and holiday/sickness records for the selected period, aggregate hours by employee and type (worked, paid leave, unpaid leave, sickness, holiday), and generate a CSV file. Use a library like papaparse or a simple CSV builder. Trigger download in the browser. Restrict access to Admin and Management."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register route for /payroll-export. Guard it so only Admin and Management can access."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a navigation link to 'Payroll Export' visible only to Admin and Management. Link to /payroll-export."
-        }
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "summary": "Allow assignment of training/knowledge records to staff showing which employees can run which experience",
-      "acceptanceCriteria": [
-        "Training/knowledge records can be added to an employee profile",
-        "Each record can specify the experience or skill covered",
-        "A summary view shows which staff can run each experience",
-        "Training log is visible on the employee profile page"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/profile/AddTrainingModal.tsx",
-          "operation": "modify",
-          "description": "Add a field for 'Experience/Skill' (text input or dropdown) to the training record form. This allows specifying which experience (e.g., Milton General, The Dollhouse) or skill the training covers."
-        },
-        {
-          "path": "frontend/src/components/profile/TrainingTab.tsx",
-          "operation": "modify",
-          "description": "Display the experience/skill field on each training record. Ensure the training log is clearly visible on the employee profile page."
-        },
-        {
-          "path": "frontend/src/pages/TrainingSummaryPage.tsx",
-          "operation": "create",
-          "description": "Create a summary page listing all experiences/skills and showing which employees have completed training for each. Group by experience, then list employees. Use getAllEmployees and getTrainingRecordsByEmployee queries to aggregate data. Restrict access to Supervisors, Management, and Admin."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register route for /training-summary. Guard it so only Supervisors, Management, and Admin can access."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a navigation link to 'Training Summary' visible only to Supervisors, Management, and Admin. Link to /training-summary."
-        }
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "summary": "Build Appraisals section with date completed, notes, and automatic next due date calculation (3 months)",
-      "acceptanceCriteria": [
-        "Appraisal records appear on the employee profile under an Appraisals tab",
-        "Each record stores date completed and notes",
-        "Next due date is automatically calculated as 3 months after the most recent appraisal",
-        "Overdue or upcoming appraisals are visually highlighted"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/profile/AppraisalsTab.tsx",
-          "operation": "modify",
-          "description": "Ensure each appraisal record displays date completed, notes, and appraisal type. Calculate the next due date (3 months after the most recent completed appraisal) and display it prominently. Highlight overdue appraisals in red and upcoming appraisals (within 2 weeks) in amber."
-        },
-        {
-          "path": "frontend/src/components/profile/AddAppraisalModal.tsx",
-          "operation": "modify",
-          "description": "Ensure the appraisal form includes date completed (or scheduled date), appraisal type, notes, and completion status. Default completion status to false for scheduled appraisals."
-        },
-        {
-          "path": "frontend/src/pages/AppraisalsDashboardPage.tsx",
-          "operation": "create",
-          "description": "Create a dashboard page listing all employees with their most recent appraisal date and next due date. Show overdue and upcoming appraisals at the top. Allow clicking an employee to navigate to their profile. Restrict access to Admin and Management."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register route for /appraisals-dashboard. Guard it so only Admin and Management can access."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a navigation link to 'Appraisals Dashboard' visible only to Admin and Management. Link to /appraisals-dashboard."
-        }
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "summary": "Build Stock Request system with form fields (Item, Experience/Building dropdown with 23 options, Quantity, Comment) and dashboard with Requested/Ordered/Delivered sections",
-      "acceptanceCriteria": [
-        "Stock request form has fields: Item, Experience/Building dropdown, Quantity, Comment",
-        "Experience/Building dropdown contains all 23 options: Milton General, The Happy Institute, The Dollhouse, Wizard Of Oz, St Georges General, Break The Bank, Marvellous Magic School, Riddled, Hell House, The Don's Revenge, Whodunit, Battle Masters, FEC General, Time Raiders, Laser Quest, Retro Arcade, 7 Sins, CSI Disco, CSI Mafia, Karaoke Lounge, Karaoke Disco, Like TV Game Show, Splatter Room",
-        "Dashboard shows three columns: Requested, Ordered, Delivered",
-        "Items can be moved between columns by drag-and-drop or a status change control"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/StockRequestsPage.tsx",
-          "operation": "create",
-          "description": "Create a Stock Requests page with a form to submit new requests. Form fields: Item (text), Experience/Building (dropdown with all 23 options), Quantity (number), Comment (textarea). Below the form, display a dashboard with three columns: Requested, Ordered, Delivered. Fetch all stock requests and group by status. Allow drag-and-drop between columns (use a library like react-beautiful-dnd or dnd-kit) or provide a dropdown/button to change status. All approved users can submit requests; Supervisors, Management, and Admin can move items between statuses."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register route for /stock-requests. All approved users can access."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a 'Stock Control' section with a link to 'Stock Requests' visible to all approved users. Link to /stock-requests."
-        },
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add query hooks for fetching stock requests and mutation hooks for submitting new requests and updating request status."
-        }
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "summary": "Build Inventory Management for food & drink with central stock list and individual stock levels for Bar, FEC Cafe, and Battle Masters with expiry dates",
-      "acceptanceCriteria": [
-        "Central stock list shows aggregated totals across all three locations",
-        "Individual stock views exist for Bar, FEC Cafe, and Battle Masters",
-        "Editing a location's stock quantity updates the central total immediately",
-        "Each location stock entry has an expiry date field",
-        "Items and locations are clearly labelled"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/InventoryManagementPage.tsx",
-          "operation": "create",
-          "description": "Create an Inventory Management page with tabs or sections for: Central Stock, Bar, FEC Cafe, Battle Masters. Central Stock displays aggregated totals for all items across all locations. Each location tab shows a table of items with columns: Item Name, Quantity, Expiry Date, Actions (Edit/Delete). Provide forms to add new items or edit existing ones. When a location's quantity is updated, automatically recalculate and display the central total. Use real-time or optimistic updates to reflect changes immediately. Restrict editing to Supervisors, Management, and Admin."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register route for /inventory-management. Guard it so only Supervisors, Management, and Admin can access."
-        },
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a link to 'Inventory Management' under the 'Stock Control' section, visible to Supervisors, Management, and Admin. Link to /inventory-management."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add query hooks for fetching inventory items by location and central totals, and mutation hooks for adding, updating, and deleting inventory items."
-        }
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "summary": "Build Employee of the Month section allowing employee recommendations, admin-only visibility, winner declaration, and £50 bonus tracking",
-      "acceptanceCriteria": [
-        "All employees can submit a recommendation with nominee name and reason",
-        "Submissions list is visible only to Admin",
-        "Admin can select a winner from the submissions",
-        "Admin can mark the £50 bonus as noted/awarded on the winner record"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/EmployeeOfMonthPage.tsx",
-          "operation": "modify",
-          "description": "Enhance the existing page to show the submission form to all employees. Hide the submissions list and winner declaration controls from non-admins. Admins see all submissions grouped by month, can select a winner via a button, and mark the £50 bonus as awarded using markWinnerBonus mutation."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Verify that query and mutation hooks for submitNomination, getNominationsByMonth, setMonthWinner, and markWinnerBonus are present and correctly implemented."
-        }
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "summary": "Add Stock Control navigation section with links to Stock Requests and Inventory Management, ensuring sidebar does not overlap content",
-      "acceptanceCriteria": [
-        "Sidebar includes a Stock Control section with links to Stock Requests and Inventory",
-        "All major sections are reachable from the sidebar: Staff, Scheduling, Stock Control, Employee of the Month, Employee Portal",
-        "Sidebar does not overlay the main content at any point",
-        "Sidebar collapse/expand toggle works correctly"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/layout/Sidebar.tsx",
-          "operation": "modify",
-          "description": "Add a 'Stock Control' navigation group with links to 'Stock Requests' and 'Inventory Management'. Ensure all major sections are present: My Portal (Employee Portal, My Shifts, My Profile), Staff (All Employees, Approval Queue), Scheduling (Rota, Holiday Statistics, Appraisals), Stock Control (Stock Requests, Inventory), Resources (Documents, Secure Resources), Employee of the Month. Verify the collapse/expand toggle is functional and the sidebar never overlaps the main content area."
+          "description": "Add four new React Query hooks to useQueries.ts: 1) useGetBadges() - a useQuery hook that calls actor.getBadges() with queryKey ['badges'], returning an array of Badge objects. 2) useGetStaffBadges(employeeId: string) - a useQuery hook that calls actor.getStaffBadges(employeeId) with queryKey ['staffBadges', employeeId], returning an array of StaffBadge objects, enabled only when employeeId is provided. 3) useAssignBadgeToStaff() - a useMutation hook that calls actor.assignBadgeToStaff(assignment) and invalidates queries ['staffBadges', assignment.employeeId] and ['badges'] on success, showing a success toast. 4) useRemoveBadgeFromStaff() - a useMutation hook that accepts { assignmentId: string, employeeId: string }, calls actor.removeBadgeFromStaff(assignmentId), and invalidates ['staffBadges', employeeId] on success with a toast notification. Follow the existing pattern in the file for error handling and query client usage."
         }
       ]
     }

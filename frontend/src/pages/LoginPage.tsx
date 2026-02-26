@@ -6,18 +6,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogIn, Shield } from "lucide-react";
 
+export const ADMIN_LOGIN_PENDING_KEY = "adminLoginPending";
+
 export default function LoginPage() {
   const { login, loginStatus } = useInternetIdentity();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const isLoggingIn = loginStatus === "logging-in";
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate fields
+    let valid = true;
+    if (!username.trim()) {
+      setUsernameError("Username is required.");
+      valid = false;
+    } else {
+      setUsernameError("");
+    }
+    if (!password.trim()) {
+      setPasswordError("Password is required.");
+      valid = false;
+    } else {
+      setPasswordError("");
+    }
+    if (!valid) return;
+
     if (username === "Admin" && password === "MagnumSal123") {
+      // Mark that after login we need to call markAdminLoggedInSuccessfully
+      sessionStorage.setItem(ADMIN_LOGIN_PENDING_KEY, "true");
       try {
         await login();
       } catch (err: any) {
+        sessionStorage.removeItem(ADMIN_LOGIN_PENDING_KEY);
         toast.error("Login failed. Please try again.");
       }
     } else {
@@ -61,11 +85,17 @@ export default function LoginPage() {
               <Input
                 id="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (usernameError) setUsernameError("");
+                }}
                 placeholder="Enter username"
                 className="bg-input border-border text-foreground mt-1"
                 autoComplete="username"
               />
+              {usernameError && (
+                <p className="text-destructive text-xs mt-1">{usernameError}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="password" className="text-foreground text-sm">Password</Label>
@@ -73,11 +103,17 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError("");
+                }}
                 placeholder="Enter password"
                 className="bg-input border-border text-foreground mt-1"
                 autoComplete="current-password"
               />
+              {passwordError && (
+                <p className="text-destructive text-xs mt-1">{passwordError}</p>
+              )}
             </div>
             <Button
               type="submit"

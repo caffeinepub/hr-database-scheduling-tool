@@ -137,6 +137,19 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+// Format inventory order status to human-readable label
+export function formatOrderStatusLabel(status: string): string {
+  switch (status) {
+    case "orderRequired":
+      return "Order Required";
+    case "ordered":
+      return "Ordered";
+    case "ok":
+    default:
+      return "OK";
+  }
+}
+
 // Experience/Building options for stock requests
 export const EXPERIENCE_OPTIONS = [
   "Milton General",
@@ -165,4 +178,4 @@ export const EXPERIENCE_OPTIONS = [
 ];
 
 export const INVENTORY_LOCATIONS = ["Bar", "FEC Cafe", "Battle Masters"] as const;
-export type InventoryLocation = typeof INVENTORY_LOCATIONS[number];
+export type InventoryLocation = (typeof INVENTORY_LOCATIONS)[number];

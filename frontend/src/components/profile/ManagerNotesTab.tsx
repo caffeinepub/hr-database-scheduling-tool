@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   useGetManagerNotesByEmployee,
   useDeleteManagerNote,
@@ -6,45 +6,66 @@ import {
   useGetCallerUserProfile,
 } from '../../hooks/useQueries';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Plus, Pencil, Trash2, StickyNote } from 'lucide-react';
 import { formatDate } from '../../lib/utils';
 import { ManagerNoteType } from '../../backend';
-import type { ManagerNote } from '../../backend';
+import type { ManagerNote, Employee } from '../../backend';
 import AddManagerNoteModal from './AddManagerNoteModal';
 import EditManagerNoteModal from './EditManagerNoteModal';
 import { toast } from 'sonner';
 
 interface Props {
   employeeId: string;
+  isAdmin?: boolean;
+  employees?: Employee[];
 }
 
 const noteTypeConfig: Record<ManagerNoteType, { label: string; className: string }> = {
-  [ManagerNoteType.general]: { label: 'General', className: 'bg-blue-100 text-blue-800 border-blue-200' },
-  [ManagerNoteType.concern]: { label: 'Concern', className: 'bg-orange-100 text-orange-800 border-orange-200' },
-  [ManagerNoteType.sickness]: { label: 'Sickness', className: 'bg-red-100 text-red-800 border-red-200' },
-  [ManagerNoteType.performance]: { label: 'Performance', className: 'bg-purple-100 text-purple-800 border-purple-200' },
+  [ManagerNoteType.general]: {
+    label: 'General',
+    className: 'bg-blue-100 text-blue-800 border-blue-200',
+  },
+  [ManagerNoteType.concern]: {
+    label: 'Concern',
+    className: 'bg-orange-100 text-orange-800 border-orange-200',
+  },
+  [ManagerNoteType.sickness]: {
+    label: 'Sickness',
+    className: 'bg-red-100 text-red-800 border-red-200',
+  },
+  [ManagerNoteType.performance]: {
+    label: 'Performance',
+    className: 'bg-purple-100 text-purple-800 border-purple-200',
+  },
 };
 
-export default function ManagerNotesTab({ employeeId }: Props) {
+export default function ManagerNotesTab({ employeeId, isAdmin, employees: employeesProp }: Props) {
   const { data: notes, isLoading } = useGetManagerNotesByEmployee(employeeId);
-  const { data: employees } = useGetAllEmployees();
+  const { data: fetchedEmployees } = useGetAllEmployees();
   const { data: userProfile } = useGetCallerUserProfile();
   const deleteNote = useDeleteManagerNote();
+
+  const employees = employeesProp ?? fetchedEmployees ?? [];
 
   const [filterType, setFilterType] = useState<ManagerNoteType | 'all'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingNote, setEditingNote] = useState<ManagerNote | null>(null);
 
   const getAuthorName = (authorId: string) =>
-    employees?.find((e) => e.id === authorId)?.fullName ?? 'Unknown';
+    employees.find((e) => e.id === authorId)?.fullName ?? 'Unknown';
 
-  const filtered = (notes || []).filter(
-    (n) => filterType === 'all' || n.noteType === filterType
-  ).sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
+  const filtered = (notes || [])
+    .filter((n) => filterType === 'all' || n.noteType === filterType)
+    .sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
 
   const handleDelete = async (note: ManagerNote) => {
     if (!confirm('Are you sure you want to delete this note?')) return;
@@ -58,37 +79,44 @@ export default function ManagerNotesTab({ employeeId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 mt-4">
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
+      <div className="space-y-3 p-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-24 w-full" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Select value={filterType} onValueChange={(v) => setFilterType(v as ManagerNoteType | 'all')}>
-            <SelectTrigger className="w-40 h-8 text-sm">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value={ManagerNoteType.general}>General</SelectItem>
-              <SelectItem value={ManagerNoteType.concern}>Concern</SelectItem>
-              <SelectItem value={ManagerNoteType.sickness}>Sickness</SelectItem>
-              <SelectItem value={ManagerNoteType.performance}>Performance</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button size="sm" onClick={() => setShowAddModal(true)}>
+        <Select
+          value={filterType}
+          onValueChange={(v) => setFilterType(v as ManagerNoteType | 'all')}
+        >
+          <SelectTrigger className="w-40 h-8 text-sm bg-white">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-gray-200">
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value={ManagerNoteType.general}>General</SelectItem>
+            <SelectItem value={ManagerNoteType.concern}>Concern</SelectItem>
+            <SelectItem value={ManagerNoteType.sickness}>Sickness</SelectItem>
+            <SelectItem value={ManagerNoteType.performance}>Performance</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          size="sm"
+          onClick={() => setShowAddModal(true)}
+          style={{ backgroundColor: 'oklch(0.48 0.22 27)', color: 'white' }}
+        >
           <Plus className="w-4 h-4 mr-1" />
           Add Note
         </Button>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-gray-400">
           <StickyNote className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p>No manager notes found.</p>
         </div>
@@ -97,22 +125,24 @@ export default function ManagerNotesTab({ employeeId }: Props) {
           {filtered.map((note) => {
             const config = noteTypeConfig[note.noteType];
             return (
-              <Card key={note.id}>
+              <Card key={note.id} className="border border-gray-200 shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${config.className}`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${config.className}`}
+                        >
                           {config.label}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-gray-500">
                           by {getAuthorName(note.authorEmployeeId)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-gray-400">
                           · {formatDate(note.createdAt)}
                         </span>
                       </div>
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                      <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       <Button
@@ -126,7 +156,7 @@ export default function ManagerNotesTab({ employeeId }: Props) {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="w-7 h-7 text-destructive hover:text-destructive"
+                        className="w-7 h-7 text-red-400 hover:text-red-600"
                         onClick={() => handleDelete(note)}
                       >
                         <Trash2 className="w-3 h-3" />
